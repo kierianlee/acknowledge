@@ -1,0 +1,10 @@
+query WorkflowStates {
+  workflowStates {
+    edges {
+      node {
+        id
+        name
+      }
+    }
+  }
+}

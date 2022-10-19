@@ -1,0 +1,37 @@
+query IssuesWithoutRewards {
+  issues(
+    filter: {
+      attachments: {
+        or: [
+          { every: { title: { neq: "Acknowledge" } } }
+          { length: { eq: 0 } }
+        ]
+      }
+    }
+  ) {
+    nodes {
+      id
+      title
+    }
+  }
+}
+
+query IssuesWithRewards {
+  issues(
+    filter: {
+      attachments: { or: [{ some: { title: { eq: "Acknowledge" } } }] }
+    }
+  ) {
+    nodes {
+      id
+      title
+      attachments {
+        nodes {
+          id
+          title
+          metadata
+        }
+      }
+    }
+  }
+}
