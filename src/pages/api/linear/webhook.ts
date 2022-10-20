@@ -18,9 +18,14 @@ const handler = nc<NextApiRequest, NextApiResponse>({
     if (action === "update") {
       if (updatedFrom?.stateId) {
         if (data.assignee?.id) {
-          const reward = await prisma.reward.findUniqueOrThrow({
+          const reward = await prisma.reward.findUnique({
             where: { issueId: payload.data.id },
           });
+
+          if (!reward) {
+            return res.status(200);
+          }
+
           let account = await prisma.account.findFirst({
             where: {
               provider: "linear",
@@ -41,7 +46,7 @@ const handler = nc<NextApiRequest, NextApiResponse>({
                   create: {
                     organization: {
                       connect: {
-                        id: organizationId,
+                        linearId: organizationId,
                       },
                     },
                   },
@@ -78,7 +83,7 @@ const handler = nc<NextApiRequest, NextApiResponse>({
                     previousPoints: user.points,
                     organization: {
                       connect: {
-                        id: organizationId,
+                        linearId: organizationId,
                       },
                     },
                     beneficiary: {
