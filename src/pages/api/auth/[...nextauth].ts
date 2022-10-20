@@ -63,8 +63,53 @@ export const authOptions: NextAuthOptions = {
     },
   ],
   callbacks: {
-    async signIn({ user, account, profile, email, credentials }) {
-      return true;
+    async signIn(params) {
+      if (params.account) {
+        const account = await prisma.account.findUnique({
+          where: {
+            provider_providerAccountId: {
+              provider: params.account.provider,
+              providerAccountId: params.account.providerAccountId,
+            },
+          },
+          include: {
+            user: true,
+          },
+        });
+
+        if (account && !account.access_token) {
+          await prisma.account.update({
+            where: {
+              provider_providerAccountId: {
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+              },
+            },
+            data: {
+              access_token: params.account.access_token,
+              expires_at: params.account.expires_at,
+              scope: params.account.scope,
+              token_type: params.account.token_type,
+            },
+          });
+        }
+
+        if (account && !params.user.email && params.profile) {
+          await prisma.user.update({
+            where: {
+              id: account.user.id,
+            },
+            data: {
+              email: params.profile.email,
+              name: params.profile.name,
+            },
+          });
+        }
+
+        return true;
+      }
+
+      return false;
     },
     async redirect({ url, baseUrl }) {
       return baseUrl;

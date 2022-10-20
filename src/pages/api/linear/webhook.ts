@@ -12,7 +12,7 @@ const handler = nc<NextApiRequest, NextApiResponse>({
   },
 }).post(async (req, res) => {
   const payload = req.body;
-  const { action, data, type, updatedFrom } = payload;
+  const { action, data, type, updatedFrom, organizationId } = payload;
 
   if (type === "Issue") {
     if (action === "update") {
@@ -21,31 +21,52 @@ const handler = nc<NextApiRequest, NextApiResponse>({
           const reward = await prisma.reward.findUniqueOrThrow({
             where: { issueId: payload.data.id },
           });
-          let player = await prisma.player.findUnique({
-            where: { linearId: payload.data.assignee.id },
+          let account = await prisma.account.findFirst({
+            where: {
+              provider: "linear",
+              providerAccountId: payload.data.assignee.id,
+            },
+            include: {
+              user: true,
+            },
           });
 
-          if (!player) {
-            player = await prisma.player.create({
+          if (!account) {
+            account = await prisma.account.create({
               data: {
-                linearId: data.assignee.id,
-                points: 0,
+                provider: "linear",
+                providerAccountId: payload.data.assignee.id,
+                type: "oauth",
+                user: {
+                  create: {
+                    organization: {
+                      connect: {
+                        id: organizationId,
+                      },
+                    },
+                  },
+                },
+              },
+              include: {
+                user: true,
               },
             });
           }
 
+          const { user } = account;
+
           if (!reward.claimed) {
             if (data.stateId === reward.targetStateId) {
-              const newPoints = player.points + reward.value;
+              const newPoints = user.points + reward.value;
 
               await prisma.$transaction([
                 prisma.reward.update({
                   where: { id: reward.id },
                   data: { claimed: true, claimedAt: new Date() },
                 }),
-                prisma.player.update({
+                prisma.user.update({
                   where: {
-                    id: player.id,
+                    id: user.id,
                   },
                   data: {
                     points: newPoints,
@@ -54,9 +75,16 @@ const handler = nc<NextApiRequest, NextApiResponse>({
                 prisma.transaction.create({
                   data: {
                     newPoints,
-                    previousPoints: player.points,
-                    player: {
-                      connect: { id: player.id },
+                    previousPoints: user.points,
+                    organization: {
+                      connect: {
+                        id: organizationId,
+                      },
+                    },
+                    beneficiary: {
+                      connect: {
+                        id: user.id,
+                      },
                     },
                     reward: {
                       connect: {

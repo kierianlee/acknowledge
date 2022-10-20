@@ -31,8 +31,8 @@ model Transaction {
   id             String       @id @default(cuid())
   beneficiary    User         @relation("transactionBeneficiary", fields: [beneficiaryId], references: [id])
   beneficiaryId  String
-  benefactor     User         @relation("transactionBenefactor", fields: [benefactorId], references: [id])
-  benefactorId   String
+  benefactor     User?         @relation("transactionBenefactor", fields: [benefactorId], references: [id])
+  benefactorId   String?
   previousPoints Int
   newPoints      Int
   reward         Reward?      @relation(fields: [rewardId], references: [id])
