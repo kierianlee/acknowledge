@@ -29,7 +29,7 @@ const Rewards: NextPage = () => {
     async () => {
       const data = await gql.IssuesWithRewards(
         {},
-        { Authorization: session?.token.accessToken || "" }
+        { Authorization: session?.accessToken || "" }
       );
 
       return data;
@@ -41,7 +41,7 @@ const Rewards: NextPage = () => {
     async () => {
       const data = await gql.WorkflowStates(
         {},
-        { Authorization: session?.token.accessToken || "" }
+        { Authorization: session?.accessToken || "" }
       );
 
       return data;
@@ -81,7 +81,7 @@ const Rewards: NextPage = () => {
               </ActionIcon>
               <ActionIcon
                 onClick={() => {
-                  const rewardId = selectedIssue!.attachments.nodes.find(
+                  const rewardId = item.attachments.nodes.find(
                     (item) => item.title === "Acknowledge"
                   )?.metadata.rewardId;
 

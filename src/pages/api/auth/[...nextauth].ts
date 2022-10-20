@@ -1,6 +1,9 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth, { NextAuthOptions, User } from "next-auth";
+import { prisma } from "../../../services/prisma";
+import { CustomPrismaAdapter } from "../../../utils/custom-prisma-adapter";
 
 export const authOptions: NextAuthOptions = {
+  adapter: CustomPrismaAdapter(prisma),
   providers: [
     {
       id: "linear",
@@ -28,7 +31,7 @@ export const authOptions: NextAuthOptions = {
           };
           const graphqlQuery = {
             operationName: "Me",
-            query: `query Me { viewer { id name email } }`,
+            query: `query Me { viewer { id name email admin organization { id } } }`,
             variables: {},
           };
 
@@ -45,14 +48,16 @@ export const authOptions: NextAuthOptions = {
             sub: payload.data.viewer.id,
             name: payload.data.viewer.name,
             email: payload.data.viewer.email,
+            organizationId: payload.data.viewer.organization.id,
           };
         },
       },
-      profile(profile) {
+      profile: (profile) => {
         return {
           id: profile.sub,
           name: profile.name,
           email: profile.email,
+          organizationId: profile.organizationId,
         };
       },
     },
@@ -65,13 +70,19 @@ export const authOptions: NextAuthOptions = {
       return baseUrl;
     },
     async session({ session, user, token }) {
-      return { ...session, token };
+      const typedUser = user as User & {
+        accessToken: string;
+        organizationId: string;
+      };
+
+      return {
+        ...session,
+        token,
+        accessToken: typedUser.accessToken,
+        organizationId: typedUser.organizationId,
+      };
     },
-    async jwt({ token, user, account, profile, isNewUser }) {
-      if (account) {
-        token.accessToken = account.access_token;
-        token.id = profile?.sub;
-      }
+    async jwt({ token }) {
       return token;
     },
   },

@@ -574,8 +574,6 @@ export type ContactSalesCreateInput = {
   message?: InputMaybe<Scalars['String']>;
   /** Name of the person requesting information. */
   name: Scalars['String'];
-  /** Name of the person requesting information. */
-  topics?: InputMaybe<Array<Scalars['String']>>;
 };
 
 /** [Internal] Comparator for content. */
@@ -2905,7 +2903,10 @@ export type Milestone = Node & {
   name: Scalars['String'];
   /** The organization that the milestone belongs to. */
   organization: Organization;
-  /** Projects associated with the milestone. */
+  /**
+   * Projects associated with the milestone.
+   * @deprecated Milestones will be removed. Use roadmaps instead.
+   */
   projects: ProjectConnection;
   /** The sort order for the milestone. */
   sortOrder: Scalars['Float'];
@@ -3230,11 +3231,20 @@ export type Mutation = {
   logout: LogoutResponse;
   /** Migrates milestones to roadmaps */
   migrateMilestonesToRoadmaps: MilestoneMigrationPayload;
-  /** Creates a new milestone. */
+  /**
+   * Creates a new milestone.
+   * @deprecated Milestones will be removed. Use roadmaps instead.
+   */
   milestoneCreate: MilestonePayload;
-  /** Deletes a milestone. */
+  /**
+   * Deletes a milestone.
+   * @deprecated Milestones will be removed. Use roadmaps instead.
+   */
   milestoneDelete: ArchivePayload;
-  /** Updates a milestone. */
+  /**
+   * Updates a milestone.
+   * @deprecated Milestones will be removed. Use roadmaps instead.
+   */
   milestoneUpdate: MilestonePayload;
   /** Archives a notification. */
   notificationArchive: ArchivePayload;
@@ -5117,7 +5127,10 @@ export type Organization = Node & {
   labels: IssueLabelConnection;
   /** The organization's logo URL. */
   logoUrl?: Maybe<Scalars['String']>;
-  /** Milestones associated with the organization. */
+  /**
+   * Milestones associated with the organization.
+   * @deprecated Milestones will be removed. Use roadmaps instead.
+   */
   milestones: MilestoneConnection;
   /** The organization's name. */
   name: Scalars['String'];
@@ -5490,7 +5503,10 @@ export type Project = Node & {
   links: ProjectLinkConnection;
   /** Users that are members of the project. */
   members: UserConnection;
-  /** The milestone that this project is associated with. */
+  /**
+   * The milestone that this project is associated with.
+   * @deprecated Milestones will be removed. Use roadmaps instead.
+   */
   milestone?: Maybe<Milestone>;
   /** The project's name. */
   name: Scalars['String'];
@@ -5667,7 +5683,7 @@ export type ProjectCreateInput = {
   milestoneId?: InputMaybe<Scalars['String']>;
   /** The name of the project. */
   name: Scalars['String'];
-  /** The sort order for the project within its milestone. */
+  /** The sort order for the project within shared views. */
   sortOrder?: InputMaybe<Scalars['Float']>;
   /** The planned start date of the project. */
   startDate?: InputMaybe<Scalars['TimelessDate']>;
@@ -5955,7 +5971,7 @@ export type ProjectUpdateInput = {
   slackIssueStatuses?: InputMaybe<Scalars['Boolean']>;
   /** Whether to send new issue notifications to Slack. */
   slackNewIssue?: InputMaybe<Scalars['Boolean']>;
-  /** The sort order for the project within its milestone. */
+  /** The sort order for the project in shared views. */
   sortOrder?: InputMaybe<Scalars['Float']>;
   /** The planned start date of the project. */
   startDate?: InputMaybe<Scalars['TimelessDate']>;
@@ -6269,9 +6285,15 @@ export type Query = {
   issueVcsBranchSearch?: Maybe<Issue>;
   /** All issues. */
   issues: IssueConnection;
-  /** One specific milestone. */
+  /**
+   * One specific milestone.
+   * @deprecated Milestones will be removed. Use roadmaps instead.
+   */
   milestone: Milestone;
-  /** All milestones. */
+  /**
+   * All milestones.
+   * @deprecated Milestones will be removed. Use roadmaps instead.
+   */
   milestones: MilestoneConnection;
   /** One specific notification. */
   notification: Notification;
@@ -8112,7 +8134,7 @@ export type UpdateOrganizationInput = {
   projectUpdatesReminderFrequency?: InputMaybe<ProjectUpdateReminderFrequency>;
   /** Whether the organization has opted for reduced customer support attachment information. */
   reducedPersonalInformation?: InputMaybe<Scalars['Boolean']>;
-  /** Whether the organization is using project milestones. */
+  /** Whether the organization is using roadmap. */
   roadmapEnabled?: InputMaybe<Scalars['Boolean']>;
   /** The URL key of the organization. */
   urlKey?: InputMaybe<Scalars['String']>;
@@ -8402,6 +8424,7 @@ export enum UserFlagType {
   EmptyMyIssuesDismissed = 'emptyMyIssuesDismissed',
   FigmaPromptDismissed = 'figmaPromptDismissed',
   ImportBannerDismissed = 'importBannerDismissed',
+  InsightsWelcomeDismissed = 'insightsWelcomeDismissed',
   IssueMovePromptCompleted = 'issueMovePromptCompleted',
   JoinTeamIntroductionDismissed = 'joinTeamIntroductionDismissed',
   ListSelectionTip = 'listSelectionTip',
@@ -8873,6 +8896,11 @@ export type ZendeskSettingsInput = {
   url: Scalars['String'];
 };
 
+export type MeQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MeQuery = { __typename?: 'Query', viewer: { __typename?: 'User', id: string, name: string, email: string, admin: boolean, organization: { __typename?: 'Organization', id: string, name: string } } };
+
 export type IssuesWithoutRewardsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -8889,6 +8917,20 @@ export type WorkflowStatesQueryVariables = Exact<{ [key: string]: never; }>;
 export type WorkflowStatesQuery = { __typename?: 'Query', workflowStates: { __typename?: 'WorkflowStateConnection', edges: Array<{ __typename?: 'WorkflowStateEdge', node: { __typename?: 'WorkflowState', id: string, name: string } }> } };
 
 
+export const MeDocument = gql`
+    query Me {
+  viewer {
+    id
+    name
+    email
+    admin
+    organization {
+      id
+      name
+    }
+  }
+}
+    `;
 export const IssuesWithoutRewardsDocument = gql`
     query IssuesWithoutRewards {
   issues(
@@ -8938,6 +8980,9 @@ const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationTy
 
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
+    Me(variables?: MeQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<MeQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<MeQuery>(MeDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'Me', 'query');
+    },
     IssuesWithoutRewards(variables?: IssuesWithoutRewardsQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<IssuesWithoutRewardsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<IssuesWithoutRewardsQuery>(IssuesWithoutRewardsDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'IssuesWithoutRewards', 'query');
     },

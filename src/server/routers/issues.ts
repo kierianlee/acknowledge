@@ -1,10 +1,10 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { linear } from "../../services/linear";
 import { protectedProcedure, t } from "../trpc";
 import cuid from "cuid";
 import { prisma } from "../../services/prisma";
 import { LinearClient } from "@linear/sdk";
+import { ActionType, ActorType } from "@prisma/client";
 
 export const issuesRouter = t.router({
   createReward: protectedProcedure
@@ -17,9 +17,30 @@ export const issuesRouter = t.router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        const linear = new LinearClient({
-          apiKey: ctx.session.token.accessToken,
+        const account = await prisma.account.findUniqueOrThrow({
+          where: {
+            provider_providerAccountId: {
+              provider: "linear",
+              providerAccountId: ctx.session.user.id,
+            },
+          },
+          include: {
+            user: true,
+          },
         });
+        const { user: actor } = account;
+
+        const linear = new LinearClient({
+          apiKey: ctx.session.accessToken,
+        });
+        const linearUser = await linear.viewer;
+
+        if (!linearUser.admin) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User is not an admin",
+          });
+        }
 
         const rewardId = cuid();
 
@@ -51,6 +72,39 @@ export const issuesRouter = t.router({
             targetStateId: input.targetStateId,
             value: input.points,
             attachmentId,
+            organization: {
+              connect: {
+                id: ctx.session.organizationId,
+              },
+            },
+            createdBy: {
+              connect: {
+                id: actor.id,
+              },
+            },
+          },
+        });
+
+        await prisma.action.create({
+          data: {
+            actorType: ActorType.USER,
+            type: ActionType.REWARD_CREATION,
+            actor: {
+              connect: {
+                id: actor.id,
+              },
+            },
+            organization: {
+              connect: {
+                id: ctx.session.organizationId,
+              },
+            },
+            metadata: {},
+            reward: {
+              connect: {
+                id: rewardId,
+              },
+            },
           },
         });
 
@@ -76,8 +130,16 @@ export const issuesRouter = t.router({
         });
 
         const linear = new LinearClient({
-          apiKey: ctx.session.token.accessToken,
+          apiKey: ctx.session.accessToken,
         });
+        const linearUser = await linear.viewer;
+
+        if (!linearUser.admin) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User is not an admin",
+          });
+        }
 
         const { attachment } = await linear.attachmentUpdate(
           reward.attachmentId,
@@ -132,8 +194,16 @@ export const issuesRouter = t.router({
         });
 
         const linear = new LinearClient({
-          apiKey: ctx.session.token.accessToken,
+          apiKey: ctx.session.accessToken,
         });
+        const linearUser = await linear.viewer;
+
+        if (!linearUser.admin) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User is not an admin",
+          });
+        }
 
         await linear.attachmentDelete(reward.attachmentId);
 

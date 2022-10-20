@@ -1,0 +1,12 @@
+query Me {
+  viewer {
+    id
+    name
+    email
+    admin
+    organization {
+      id
+      name
+    }
+  }
+}
