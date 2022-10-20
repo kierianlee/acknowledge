@@ -74,34 +74,32 @@ const Issues: NextPageWithLayout = () => {
   );
 
   return (
-    <>
-      <Box p="lg">
-        <Title order={2} weight={500} mb="sm">
-          Issues
-        </Title>
-        <Group mb="xl">
-          <Button
-            size="xs"
-            variant="outline"
-            color="gray"
-            sx={{ borderStyle: "dotted" }}
-            leftIcon={<IconPlus size="14px" />}
-          >
-            Add Filter
-          </Button>
-        </Group>
-        {issuesData?.issues.nodes.map((item, index) => (
-          <IssueCard
-            key={index}
-            issue={item}
-            workflowStates={workflowStatesData?.workflowStates.edges}
-            actionCallback={() => {
-              refetchIssues();
-            }}
-          />
-        ))}
-      </Box>
-    </>
+    <Box p="lg">
+      <Title order={2} weight={500} mb="sm">
+        Issues
+      </Title>
+      <Group mb="xl">
+        <Button
+          size="xs"
+          variant="outline"
+          color="gray"
+          sx={{ borderStyle: "dotted" }}
+          leftIcon={<IconPlus size="14px" />}
+        >
+          Add Filter
+        </Button>
+      </Group>
+      {issuesData?.issues.nodes.map((item, index) => (
+        <IssueCard
+          key={index}
+          issue={item}
+          workflowStates={workflowStatesData?.workflowStates.edges}
+          actionCallback={() => {
+            refetchIssues();
+          }}
+        />
+      ))}
+    </Box>
   );
 };
 
