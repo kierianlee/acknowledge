@@ -17,11 +17,13 @@ export const issuesRouter = t.router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        const account = await prisma.account.findUniqueOrThrow({
+        const account = await prisma.account.findFirstOrThrow({
           where: {
-            provider_providerAccountId: {
-              provider: "linear",
-              providerAccountId: ctx.session.user.id,
+            provider: {
+              equals: "linear",
+            },
+            user: {
+              id: ctx.session.user.id,
             },
           },
           include: {
@@ -110,7 +112,7 @@ export const issuesRouter = t.router({
 
         return createdReward;
       } catch (err) {
-        console.log(err);
+        throw err;
       }
     }),
   updateReward: protectedProcedure

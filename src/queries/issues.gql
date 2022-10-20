@@ -1,30 +1,25 @@
-query IssuesWithoutRewards {
+query Issues(
+  $filter: IssueFilter
+  $before: String
+  $after: String
+  $first: Int
+  $last: Int
+  $includeArchived: Boolean
+  $orderBy: PaginationOrderBy
+) {
   issues(
-    filter: {
-      attachments: {
-        or: [
-          { every: { title: { neq: "Acknowledge" } } }
-          { length: { eq: 0 } }
-        ]
-      }
-    }
+    filter: $filter
+    before: $before
+    after: $after
+    first: $first
+    last: $last
+    includeArchived: $includeArchived
+    orderBy: $orderBy
   ) {
     nodes {
       id
       title
-    }
-  }
-}
-
-query IssuesWithRewards {
-  issues(
-    filter: {
-      attachments: { or: [{ some: { title: { eq: "Acknowledge" } } }] }
-    }
-  ) {
-    nodes {
-      id
-      title
+      priority
       attachments {
         nodes {
           id

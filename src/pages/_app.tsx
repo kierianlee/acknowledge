@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getSdk } from "../__generated__/graphql-operations";
 import { gqlClient } from "../services/graphql";
 import { themeOverride } from "../styles/theme";
+import { NotificationsProvider } from "@mantine/notifications";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -37,7 +38,9 @@ function App({
           withCSSVariables
           theme={themeOverride}
         >
-          {getLayout(<Component {...pageProps} />)}
+          <NotificationsProvider>
+            {getLayout(<Component {...pageProps} />)}
+          </NotificationsProvider>
         </MantineProvider>
       </AuthWrapper>
     </SessionProvider>

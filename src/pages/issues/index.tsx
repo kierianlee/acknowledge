@@ -3,26 +3,57 @@ import { useSession } from "next-auth/react";
 import { gqlClient } from "../../services/graphql";
 import {
   getSdk,
-  IssuesWithoutRewardsQuery,
+  IssuesQuery,
+  IssuesQueryVariables,
   WorkflowStatesQuery,
 } from "../../__generated__/graphql-operations";
-import { Button, Modal, NumberInput, Select, Text, Title } from "@mantine/core";
+import {
+  ActionIcon,
+  Badge,
+  Box,
+  Button,
+  Divider,
+  Group,
+  NumberInput,
+  Select,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import { ReactElement, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { trpc } from "../../utils/trpc";
 import DefaultLayout from "../../components/layouts/default/default-layout";
 import { NextPageWithLayout } from "../_app";
+import {
+  convertPriorityNumberToIcon,
+  convertPriorityNumberToLabel,
+} from "../../utils/linear";
+import { IconPencil, IconPlus } from "@tabler/icons";
+import { useAuthStore } from "../../stores/auth";
+import { showErrorNotification } from "../../utils/errors";
 
 const Issues: NextPageWithLayout = () => {
   const { data: session } = useSession();
   const gql = getSdk(gqlClient);
-  const { data: issuesWithoutRewardsData } = useQuery(
-    ["issuesWithoutRewards"],
+  const [issuesQueryVariables, setIssuesQueryVariables] =
+    useState<IssuesQueryVariables>({
+      filter: {
+        attachments: {
+          or: [
+            { every: { title: { neq: "Acknowledge" } } },
+            { length: { eq: 0 } },
+          ],
+        },
+      },
+    });
+
+  const { data: issuesData, refetch: refetchIssues } = useQuery(
+    ["issues"],
     async () => {
-      const data = await gql.IssuesWithoutRewards(
-        {},
-        { Authorization: session?.accessToken || "" }
-      );
+      const data = await gql.Issues(issuesQueryVariables, {
+        Authorization: session?.accessToken || "",
+      });
 
       return data;
     },
@@ -41,121 +72,201 @@ const Issues: NextPageWithLayout = () => {
     { enabled: !!session?.accessToken }
   );
 
-  const { mutate: createRewardMutate } = trpc.issues.createReward.useMutation(
-    {}
-  );
-
-  const [addRewardModalOpened, setAddRewardModalOpened] = useState(false);
-  const [selectedIssue, setSelectedIssue] = useState<
-    IssuesWithoutRewardsQuery["issues"]["nodes"][0] | null
-  >(null);
-
   return (
     <>
-      <div>
-        <Title order={1} weight={500}>Issues</Title>
-        {issuesWithoutRewardsData?.issues.nodes.map((item, index) => (
-          <div
-            key={index}
-            onClick={() => {
-              setSelectedIssue(item);
-              setAddRewardModalOpened(true);
-            }}
+      <Box p="lg">
+        <Title order={2} weight={500} mb="sm">
+          Issues
+        </Title>
+        <Group mb="xl">
+          <Button
+            size="xs"
+            variant="outline"
+            color="gray"
+            sx={{ borderStyle: "dotted" }}
+            leftIcon={<IconPlus size="14px" />}
           >
-            {item.title}
-          </div>
+            Add Filter
+          </Button>
+        </Group>
+        {issuesData?.issues.nodes.map((item, index) => (
+          <IssueCard
+            key={index}
+            issue={item}
+            workflowStates={workflowStatesData?.workflowStates.edges}
+            actionCallback={() => {
+              refetchIssues();
+            }}
+          />
         ))}
-      </div>
-      <AddRewardModal
-        opened={addRewardModalOpened}
-        onClose={() => {
-          setAddRewardModalOpened(false);
-          setSelectedIssue(null);
-        }}
-        issue={selectedIssue}
-        onSubmit={(values) => {
-          console.log(values);
-          setAddRewardModalOpened(false);
-          createRewardMutate({
-            issueId: selectedIssue!.id,
-            points: values.points,
-            targetStateId: values.targetStateId,
-          });
-        }}
-        workflowStates={workflowStatesData?.workflowStates.edges}
-      />
+      </Box>
     </>
   );
 };
 
-interface AddRewardModalProps {
-  onClose: () => void;
-  opened: boolean;
-  issue: IssuesWithoutRewardsQuery["issues"]["nodes"][0] | null;
-  onSubmit: (values: AddRewardModalFormValues) => void;
+interface IssueCardProps {
+  issue: IssuesQuery["issues"]["nodes"][0];
   workflowStates?: WorkflowStatesQuery["workflowStates"]["edges"];
+  defaultEditable?: boolean;
+  actionCallback?: () => void;
 }
 
-interface AddRewardModalFormValues {
+interface IssueCardFormValues {
   points: number;
   targetStateId: string;
 }
 
-const AddRewardModal = (props: AddRewardModalProps) => {
-  const form = useForm<AddRewardModalFormValues>({
+const IssueCard = ({
+  defaultEditable = false,
+  issue,
+  workflowStates,
+  actionCallback,
+}: IssueCardProps) => {
+  const auth = useAuthStore();
+
+  const form = useForm<IssueCardFormValues>({
     defaultValues: {
-      points: 0,
+      points: undefined,
       targetStateId: "",
     },
   });
 
-  const handleSubmission = (values: AddRewardModalFormValues) => {
-    props.onSubmit(values);
-    form.reset({ points: 0 });
+  const [editable, setEditable] = useState(defaultEditable);
+
+  const { mutate: createRewardMutate } = trpc.issues.createReward.useMutation({
+    onSuccess: () => {
+      if (actionCallback) {
+        actionCallback();
+      }
+      setEditable(false);
+      form.reset({ points: 0, targetStateId: "" });
+    },
+    onError: showErrorNotification,
+  });
+
+  const PriorityIcon = convertPriorityNumberToIcon(issue?.priority || 0);
+
+  const handleSubmission = (values: IssueCardFormValues) => {
+    createRewardMutate({
+      issueId: issue.id,
+      points: values.points,
+      targetStateId: values.targetStateId,
+    });
   };
+
   return (
-    <Modal
-      onClose={props.onClose}
-      opened={props.opened}
-      closeOnClickOutside={false}
+    <Box
+      sx={(theme) => ({
+        borderRadius: theme.radius.md,
+        marginBottom: "1rem",
+        position: "relative",
+        background: "#fff",
+        shadow: theme.shadows.xl,
+      })}
     >
-      <form onSubmit={form.handleSubmit(handleSubmission)}>
-        <Text>Add points to {props.issue?.title}</Text>
-        <Controller
-          control={form.control}
-          name="points"
-          render={({ field: { value, onChange } }) => (
-            <NumberInput
-              value={value}
-              onChange={onChange}
-              placeholder="Enter value"
-              required
-            />
-          )}
-          rules={{ required: true }}
-        />
-        <Controller
-          control={form.control}
-          name="targetStateId"
-          render={({ field: { value, onChange } }) => (
-            <Select
-              value={value}
-              onChange={onChange}
-              placeholder="Select value"
-              data={
-                props.workflowStates?.map((item) => ({
-                  label: item.node.name,
-                  value: item.node.id,
-                })) || []
-              }
-              required
-            />
-          )}
-          rules={{ required: true }}
-        />
-        <Button type="submit">Submit</Button>
-      </form>
-    </Modal>
+      {!editable && auth.user?.admin && (
+        <Box sx={{ position: "absolute", right: "16px", top: "16px" }}>
+          <ActionIcon
+            variant="outline"
+            size="lg"
+            onClick={() => setEditable(true)}
+            sx={(theme) => ({ borderColor: theme.colors.gray[3] })}
+          >
+            <IconPencil size="16px" />
+          </ActionIcon>
+        </Box>
+      )}
+      <Stack p="md">
+        <Text weight={600}>{issue?.title}</Text>
+        <Group>
+          <Badge px={4} py="md" radius="md" color="gray">
+            <Group align="center" spacing={4}>
+              <PriorityIcon size="16px" />
+              <Text sx={{ fontSize: "12px" }} transform="none" weight={600}>
+                {convertPriorityNumberToLabel(issue.priority)}
+              </Text>
+            </Group>
+          </Badge>
+        </Group>
+      </Stack>
+      {editable && (
+        <>
+          <Divider orientation="horizontal" />
+          <Box
+            component="form"
+            p="md"
+            onSubmit={form.handleSubmit(handleSubmission)}
+          >
+            <Group>
+              <Group sx={{ flex: "1" }}>
+                <Group>
+                  <Controller
+                    control={form.control}
+                    name="points"
+                    render={({
+                      field: { value, onChange },
+                      fieldState: { error },
+                    }) => (
+                      <NumberInput
+                        value={value}
+                        onChange={onChange}
+                        placeholder="0"
+                        styles={{ input: { maxWidth: "70px" } }}
+                        size="xs"
+                        error={!!error}
+                        min={1}
+                        max={100}
+                      />
+                    )}
+                    rules={{ required: true }}
+                  />
+                  <Text color="dimmed" size="xs">
+                    points
+                  </Text>
+                </Group>
+                <Controller
+                  control={form.control}
+                  name="targetStateId"
+                  render={({
+                    field: { value, onChange },
+                    fieldState: { error },
+                  }) => (
+                    <Select
+                      value={value}
+                      onChange={onChange}
+                      placeholder="Select target"
+                      data={
+                        workflowStates?.map((item) => ({
+                          label: item.node.name,
+                          value: item.node.id,
+                        })) || []
+                      }
+                      size="xs"
+                      required
+                      error={!!error}
+                    />
+                  )}
+                  rules={{ required: true }}
+                />
+              </Group>
+              <Button
+                type="submit"
+                variant="outline"
+                color="gray"
+                onClick={() => setEditable(false)}
+                sx={(theme) => ({ borderColor: theme.colors.gray[4] })}
+                size="xs"
+              >
+                Cancel
+              </Button>
+              <Button type="submit" size="xs">
+                Assign
+              </Button>
+            </Group>
+          </Box>
+        </>
+      )}
+    </Box>
   );
 };
 

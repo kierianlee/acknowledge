@@ -1,4 +1,4 @@
-import NextAuth, { NextAuthOptions, User } from "next-auth";
+import NextAuth, { NextAuthOptions, Session, User } from "next-auth";
 import { prisma } from "../../../services/prisma";
 import { CustomPrismaAdapter } from "../../../utils/custom-prisma-adapter";
 
@@ -76,11 +76,16 @@ export const authOptions: NextAuthOptions = {
       };
 
       return {
-        ...session,
+        user: {
+          id: user.id,
+          email: user.email,
+          image: user.image,
+          name: user.name,
+        },
         token,
         accessToken: typedUser.accessToken,
         organizationId: typedUser.organizationId,
-      };
+      } as Session;
     },
     async jwt({ token }) {
       return token;

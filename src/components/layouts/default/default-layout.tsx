@@ -1,15 +1,14 @@
 import { ReactNode } from "react";
 import styled from "@emotion/styled";
-import { Group } from "@mantine/core";
 import { Sidebar } from "../common/sidebar";
 
 const DefaultLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <Root>
-      <Group spacing={0} align="flex-start" sx={{ flex: "1" }}>
+      <Container>
         <Sidebar />
         <Content>{children}</Content>
-      </Group>
+      </Container>
     </Root>
   );
 };
@@ -20,10 +19,16 @@ const Root = styled.div({
   position: "relative",
   display: "flex",
   flexDirection: "column",
-  minHeight: "100vh",
+});
+const Container = styled.div({
+  flex: "1",
+  display: "flex",
 });
 const Content = styled.div({
   flex: "1",
   display: "flex",
   flexDirection: "column",
+  height: "100vh",
+  overflowY: "scroll",
+  background: "#F4F5F8",
 });

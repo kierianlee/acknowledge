@@ -6143,6 +6143,8 @@ export type PushSubscriptionCreateInput = {
   data: Scalars['String'];
   /** The identifier. If none is provided, the backend will generate one. */
   id?: InputMaybe<Scalars['String']>;
+  /** Whether this is a subscription payload for Google Cloud Messaging or Apple Push Notification service */
+  type?: InputMaybe<PushSubscriptionType>;
   /** The user identifier of the subscription. */
   userId: Scalars['String'];
 };
@@ -6167,6 +6169,12 @@ export type PushSubscriptionTestPayload = {
   /** Whether the operation was successful. */
   success: Scalars['Boolean'];
 };
+
+/** The different push subscription types */
+export enum PushSubscriptionType {
+  Apple = 'apple',
+  Web = 'web'
+}
 
 export type Query = {
   __typename?: 'Query';
@@ -8901,15 +8909,18 @@ export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type MeQuery = { __typename?: 'Query', viewer: { __typename?: 'User', id: string, name: string, email: string, admin: boolean, organization: { __typename?: 'Organization', id: string, name: string } } };
 
-export type IssuesWithoutRewardsQueryVariables = Exact<{ [key: string]: never; }>;
+export type IssuesQueryVariables = Exact<{
+  filter?: InputMaybe<IssueFilter>;
+  before?: InputMaybe<Scalars['String']>;
+  after?: InputMaybe<Scalars['String']>;
+  first?: InputMaybe<Scalars['Int']>;
+  last?: InputMaybe<Scalars['Int']>;
+  includeArchived?: InputMaybe<Scalars['Boolean']>;
+  orderBy?: InputMaybe<PaginationOrderBy>;
+}>;
 
 
-export type IssuesWithoutRewardsQuery = { __typename?: 'Query', issues: { __typename?: 'IssueConnection', nodes: Array<{ __typename?: 'Issue', id: string, title: string }> } };
-
-export type IssuesWithRewardsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type IssuesWithRewardsQuery = { __typename?: 'Query', issues: { __typename?: 'IssueConnection', nodes: Array<{ __typename?: 'Issue', id: string, title: string, attachments: { __typename?: 'AttachmentConnection', nodes: Array<{ __typename?: 'Attachment', id: string, title: string, metadata: any }> } }> } };
+export type IssuesQuery = { __typename?: 'Query', issues: { __typename?: 'IssueConnection', nodes: Array<{ __typename?: 'Issue', id: string, title: string, priority: number, attachments: { __typename?: 'AttachmentConnection', nodes: Array<{ __typename?: 'Attachment', id: string, title: string, metadata: any }> } }> } };
 
 export type WorkflowStatesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -8931,24 +8942,21 @@ export const MeDocument = gql`
   }
 }
     `;
-export const IssuesWithoutRewardsDocument = gql`
-    query IssuesWithoutRewards {
+export const IssuesDocument = gql`
+    query Issues($filter: IssueFilter, $before: String, $after: String, $first: Int, $last: Int, $includeArchived: Boolean, $orderBy: PaginationOrderBy) {
   issues(
-    filter: {attachments: {or: [{every: {title: {neq: "Acknowledge"}}}, {length: {eq: 0}}]}}
+    filter: $filter
+    before: $before
+    after: $after
+    first: $first
+    last: $last
+    includeArchived: $includeArchived
+    orderBy: $orderBy
   ) {
     nodes {
       id
       title
-    }
-  }
-}
-    `;
-export const IssuesWithRewardsDocument = gql`
-    query IssuesWithRewards {
-  issues(filter: {attachments: {or: [{some: {title: {eq: "Acknowledge"}}}]}}) {
-    nodes {
-      id
-      title
+      priority
       attachments {
         nodes {
           id
@@ -8983,11 +8991,8 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     Me(variables?: MeQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<MeQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<MeQuery>(MeDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'Me', 'query');
     },
-    IssuesWithoutRewards(variables?: IssuesWithoutRewardsQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<IssuesWithoutRewardsQuery> {
-      return withWrapper((wrappedRequestHeaders) => client.request<IssuesWithoutRewardsQuery>(IssuesWithoutRewardsDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'IssuesWithoutRewards', 'query');
-    },
-    IssuesWithRewards(variables?: IssuesWithRewardsQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<IssuesWithRewardsQuery> {
-      return withWrapper((wrappedRequestHeaders) => client.request<IssuesWithRewardsQuery>(IssuesWithRewardsDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'IssuesWithRewards', 'query');
+    Issues(variables?: IssuesQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<IssuesQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<IssuesQuery>(IssuesDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'Issues', 'query');
     },
     WorkflowStates(variables?: WorkflowStatesQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<WorkflowStatesQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<WorkflowStatesQuery>(WorkflowStatesDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'WorkflowStates', 'query');
