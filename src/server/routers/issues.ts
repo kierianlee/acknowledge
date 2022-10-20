@@ -33,7 +33,7 @@ export const issuesRouter = t.router({
         const { user: actor } = account;
 
         const linear = new LinearClient({
-          apiKey: ctx.session.accessToken,
+          accessToken: ctx.session.accessToken,
         });
         const linearUser = await linear.viewer;
 
@@ -55,6 +55,7 @@ export const issuesRouter = t.router({
             rewardId,
             points: input.points,
             targetStateId: input.targetStateId,
+            claimed: false,
           },
         });
 
@@ -90,7 +91,7 @@ export const issuesRouter = t.router({
         await prisma.action.create({
           data: {
             actorType: ActorType.USER,
-            type: ActionType.REWARD_CREATION,
+            type: ActionType.REWARD_CREATE,
             actor: {
               connect: {
                 id: actor.id,
@@ -125,6 +126,21 @@ export const issuesRouter = t.router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
+        const account = await prisma.account.findFirstOrThrow({
+          where: {
+            provider: {
+              equals: "linear",
+            },
+            user: {
+              id: ctx.session.user.id,
+            },
+          },
+          include: {
+            user: true,
+          },
+        });
+        const { user: actor } = account;
+
         const reward = await prisma.reward.findUniqueOrThrow({
           where: {
             id: input.rewardId,
@@ -132,7 +148,7 @@ export const issuesRouter = t.router({
         });
 
         const linear = new LinearClient({
-          apiKey: ctx.session.accessToken,
+          accessToken: ctx.session.accessToken,
         });
         const linearUser = await linear.viewer;
 
@@ -152,6 +168,7 @@ export const issuesRouter = t.router({
               rewardId: reward.id,
               points: input.points,
               targetStateId: input.targetStateId,
+              claimed: reward.claimed,
             },
           }
         );
@@ -176,9 +193,32 @@ export const issuesRouter = t.router({
           },
         });
 
+        await prisma.action.create({
+          data: {
+            actorType: ActorType.USER,
+            type: ActionType.REWARD_UPDATE,
+            actor: {
+              connect: {
+                id: actor.id,
+              },
+            },
+            organization: {
+              connect: {
+                id: ctx.session.organizationId,
+              },
+            },
+            metadata: {},
+            reward: {
+              connect: {
+                id: reward.id,
+              },
+            },
+          },
+        });
+
         return updatedReward;
       } catch (err) {
-        console.log(err);
+        throw err;
       }
     }),
   deleteReward: protectedProcedure
@@ -189,6 +229,21 @@ export const issuesRouter = t.router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
+        const account = await prisma.account.findFirstOrThrow({
+          where: {
+            provider: {
+              equals: "linear",
+            },
+            user: {
+              id: ctx.session.user.id,
+            },
+          },
+          include: {
+            user: true,
+          },
+        });
+        const { user: actor } = account;
+
         const reward = await prisma.reward.findUniqueOrThrow({
           where: {
             id: input.rewardId,
@@ -196,7 +251,7 @@ export const issuesRouter = t.router({
         });
 
         const linear = new LinearClient({
-          apiKey: ctx.session.accessToken,
+          accessToken: ctx.session.accessToken,
         });
         const linearUser = await linear.viewer;
 
@@ -215,9 +270,32 @@ export const issuesRouter = t.router({
           },
         });
 
+        await prisma.action.create({
+          data: {
+            actorType: ActorType.USER,
+            type: ActionType.REWARD_DELETE,
+            actor: {
+              connect: {
+                id: actor.id,
+              },
+            },
+            organization: {
+              connect: {
+                id: ctx.session.organizationId,
+              },
+            },
+            metadata: {},
+            reward: {
+              connect: {
+                id: reward.id,
+              },
+            },
+          },
+        });
+
         return reward;
       } catch (err) {
-        console.log(err);
+        throw err;
       }
     }),
 });

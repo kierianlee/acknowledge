@@ -31,7 +31,7 @@ model Transaction {
   id             String       @id @default(cuid())
   beneficiary    User         @relation("transactionBeneficiary", fields: [beneficiaryId], references: [id])
   beneficiaryId  String
-  benefactor     User?         @relation("transactionBenefactor", fields: [benefactorId], references: [id])
+  benefactor     User?        @relation("transactionBenefactor", fields: [benefactorId], references: [id])
   benefactorId   String?
   previousPoints Int
   newPoints      Int
@@ -50,7 +50,9 @@ enum ActorType {
 
 enum ActionType {
   TRANSACTION
-  REWARD_CREATION
+  REWARD_CREATE
+  REWARD_UPDATE
+  REWARD_DELETE
 }
 
 model Action {
@@ -71,6 +73,7 @@ model Action {
 model Organization {
   id           String        @id @default(cuid())
   linearId     String        @unique
+  apiKey       String?
   users        User[]
   rewards      Reward[]
   transactions Transaction[]

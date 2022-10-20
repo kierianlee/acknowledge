@@ -1,3 +1,4 @@
+import { LinearClient } from "@linear/sdk";
 import { NextApiRequest, NextApiResponse } from "next";
 import nc from "next-connect";
 import { prisma } from "../../../services/prisma";
@@ -24,6 +25,20 @@ const handler = nc<NextApiRequest, NextApiResponse>({
 
           if (!reward) {
             return res.status(200);
+          }
+
+          let organization = await prisma.organization.findFirst({
+            where: {
+              linearId: organizationId,
+            },
+          });
+
+          if (!organization) {
+            organization = await prisma.organization.create({
+              data: {
+                linearId: organizationId,
+              },
+            });
           }
 
           let account = await prisma.account.findFirst({
@@ -60,45 +75,62 @@ const handler = nc<NextApiRequest, NextApiResponse>({
 
           const { user } = account;
 
-          if (!reward.claimed) {
-            if (data.stateId === reward.targetStateId) {
-              const newPoints = user.points + reward.value;
+          if (organization.apiKey) {
+            if (!reward.claimed) {
+              if (data.stateId === reward.targetStateId) {
+                const newPoints = user.points + reward.value;
 
-              await prisma.$transaction([
-                prisma.reward.update({
-                  where: { id: reward.id },
-                  data: { claimed: true, claimedAt: new Date() },
-                }),
-                prisma.user.update({
-                  where: {
-                    id: user.id,
-                  },
-                  data: {
-                    points: newPoints,
-                  },
-                }),
-                prisma.transaction.create({
-                  data: {
-                    newPoints,
-                    previousPoints: user.points,
-                    organization: {
-                      connect: {
-                        linearId: organizationId,
+                await prisma.$transaction([
+                  prisma.reward.update({
+                    where: { id: reward.id },
+                    data: { claimed: true, claimedAt: new Date() },
+                  }),
+                  prisma.user.update({
+                    where: {
+                      id: user.id,
+                    },
+                    data: {
+                      points: newPoints,
+                    },
+                  }),
+                  prisma.transaction.create({
+                    data: {
+                      newPoints,
+                      previousPoints: user.points,
+                      organization: {
+                        connect: {
+                          linearId: organizationId,
+                        },
+                      },
+                      beneficiary: {
+                        connect: {
+                          id: user.id,
+                        },
+                      },
+                      reward: {
+                        connect: {
+                          id: reward.id,
+                        },
                       },
                     },
-                    beneficiary: {
-                      connect: {
-                        id: user.id,
-                      },
-                    },
-                    reward: {
-                      connect: {
-                        id: reward.id,
-                      },
-                    },
+                  }),
+                ]);
+
+                const linear = new LinearClient({
+                  apiKey: organization.apiKey,
+                });
+
+                await linear.attachmentUpdate(reward.attachmentId, {
+                  title: "Acknowledge",
+                  subtitle: `${reward.value} points`,
+                  metadata: {
+                    rewardId: reward.id,
+                    points: reward.value,
+                    targetStateId: reward.targetStateId,
+                    claimed: true,
                   },
-                }),
-              ]);
+                });
+              }
             }
           }
         }

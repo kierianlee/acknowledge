@@ -2,7 +2,7 @@
 CREATE TYPE "ActorType" AS ENUM ('USER', 'SYSTEM');
 
 -- CreateEnum
-CREATE TYPE "ActionType" AS ENUM ('TRANSACTION', 'REWARD_CREATION');
+CREATE TYPE "ActionType" AS ENUM ('TRANSACTION', 'REWARD_CREATE', 'REWARD_UPDATE', 'REWARD_DELETE');
 
 -- CreateTable
 CREATE TABLE "Reward" (
@@ -26,7 +26,7 @@ CREATE TABLE "Reward" (
 CREATE TABLE "Transaction" (
     "id" TEXT NOT NULL,
     "beneficiaryId" TEXT NOT NULL,
-    "benefactorId" TEXT NOT NULL,
+    "benefactorId" TEXT,
     "previousPoints" INTEGER NOT NULL,
     "newPoints" INTEGER NOT NULL,
     "rewardId" TEXT,
@@ -56,6 +56,7 @@ CREATE TABLE "Action" (
 CREATE TABLE "Organization" (
     "id" TEXT NOT NULL,
     "linearId" TEXT NOT NULL,
+    "apiKey" TEXT,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -155,7 +156,7 @@ ALTER TABLE "Reward" ADD CONSTRAINT "Reward_organizationId_fkey" FOREIGN KEY ("o
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_beneficiaryId_fkey" FOREIGN KEY ("beneficiaryId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_benefactorId_fkey" FOREIGN KEY ("benefactorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_benefactorId_fkey" FOREIGN KEY ("benefactorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_rewardId_fkey" FOREIGN KEY ("rewardId") REFERENCES "Reward"("id") ON DELETE SET NULL ON UPDATE CASCADE;

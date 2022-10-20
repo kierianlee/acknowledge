@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { gqlClient } from "../../services/graphql";
+import { gqlClient } from "../services/graphql";
 import {
   getSdk,
   IssuesQuery,
   IssuesQueryVariables,
   WorkflowStatesQuery,
-} from "../../__generated__/graphql-operations";
+} from "../__generated__/graphql-operations";
 import {
   ActionIcon,
   Badge,
@@ -22,16 +22,16 @@ import {
 } from "@mantine/core";
 import { ReactElement, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { trpc } from "../../utils/trpc";
-import DefaultLayout from "../../components/layouts/default/default-layout";
-import { NextPageWithLayout } from "../_app";
+import { trpc } from "../utils/trpc";
+import DefaultLayout from "../components/layouts/default/default-layout";
+import { NextPageWithLayout } from "./_app";
 import {
   convertPriorityNumberToIcon,
   convertPriorityNumberToLabel,
-} from "../../utils/linear";
-import { IconPencil, IconPlus } from "@tabler/icons";
-import { useAuthStore } from "../../stores/auth";
-import { showErrorNotification } from "../../utils/errors";
+} from "../utils/linear";
+import { IconPencil, IconPlus, IconTrophy } from "@tabler/icons";
+import { useAuthStore } from "../stores/auth";
+import { showErrorNotification } from "../utils/errors";
 import { showNotification } from "@mantine/notifications";
 
 const Issues: NextPageWithLayout = () => {
@@ -40,12 +40,12 @@ const Issues: NextPageWithLayout = () => {
   const [issuesQueryVariables, setIssuesQueryVariables] =
     useState<IssuesQueryVariables>({
       filter: {
-        attachments: {
-          or: [
-            { every: { title: { neq: "Acknowledge" } } },
-            { length: { eq: 0 } },
-          ],
-        },
+        // attachments: {
+        //   or: [
+        //     { every: { title: { neq: "Acknowledge" } } },
+        //     { length: { eq: 0 } },
+        //   ],
+        // },
       },
     });
 
@@ -125,39 +125,69 @@ const IssueCard = ({
 }: IssueCardProps) => {
   const auth = useAuthStore();
 
+  const acknowledgeMetadata = issue.attachments?.nodes.find(
+    (item) => item.title === "Acknowledge"
+  )?.metadata;
+  const points = acknowledgeMetadata?.points;
+
   const form = useForm<IssueCardFormValues>({
     defaultValues: {
-      points: undefined,
-      targetStateId: "",
+      points: points || undefined,
+      targetStateId: acknowledgeMetadata?.targetStateId || undefined,
     },
   });
 
   const [editable, setEditable] = useState(defaultEditable);
 
-  const { mutate: createRewardMutate } = trpc.issues.createReward.useMutation({
-    onSuccess: () => {
-      if (actionCallback) {
-        actionCallback();
-      }
-      setEditable(false);
-      form.reset({ points: 0, targetStateId: "" });
-      showNotification({
-        color: "green",
-        title: "Success",
-        message: "Reward set!",
-      });
-    },
-    onError: showErrorNotification,
-  });
+  const { mutate: createRewardMutate, isLoading: createRewardLoading } =
+    trpc.issues.createReward.useMutation({
+      onSuccess: () => {
+        if (actionCallback) {
+          actionCallback();
+        }
+        setEditable(false);
+        form.reset({ points: 0, targetStateId: "" });
+        showNotification({
+          color: "green",
+          title: "Success",
+          message: "Reward set!",
+        });
+      },
+      onError: showErrorNotification,
+    });
+  const { mutate: updateRewardMutate, isLoading: updateRewardLoading } =
+    trpc.issues.updateReward.useMutation({
+      onSuccess: () => {
+        if (actionCallback) {
+          actionCallback();
+        }
+        setEditable(false);
+        form.reset({ points: 0, targetStateId: "" });
+        showNotification({
+          color: "green",
+          title: "Success",
+          message: "Reward set!",
+        });
+      },
+      onError: showErrorNotification,
+    });
 
   const PriorityIcon = convertPriorityNumberToIcon(issue?.priority || 0);
 
   const handleSubmission = (values: IssueCardFormValues) => {
-    createRewardMutate({
-      issueId: issue.id,
-      points: values.points,
-      targetStateId: values.targetStateId,
-    });
+    if (points) {
+      updateRewardMutate({
+        points: values.points,
+        targetStateId: values.targetStateId,
+        rewardId: acknowledgeMetadata.rewardId,
+      });
+    } else {
+      createRewardMutate({
+        issueId: issue.id,
+        points: values.points,
+        targetStateId: values.targetStateId,
+      });
+    }
   };
 
   return (
@@ -193,6 +223,16 @@ const IssueCard = ({
               </Text>
             </Group>
           </Badge>
+          {!!points && (
+            <Badge px={4} py="md" radius="md" color="gray">
+              <Group align="center" spacing={4}>
+                <IconTrophy size="16px" />
+                <Text sx={{ fontSize: "12px" }} transform="none" weight={600}>
+                  {points} points
+                </Text>
+              </Group>
+            </Badge>
+          )}
         </Group>
       </Stack>
       {editable && (
@@ -265,7 +305,11 @@ const IssueCard = ({
               >
                 Cancel
               </Button>
-              <Button type="submit" size="xs">
+              <Button
+                type="submit"
+                size="xs"
+                loading={createRewardLoading || updateRewardLoading}
+              >
                 Assign
               </Button>
             </Group>
