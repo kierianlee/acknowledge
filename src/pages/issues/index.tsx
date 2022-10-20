@@ -32,6 +32,7 @@ import {
 import { IconPencil, IconPlus } from "@tabler/icons";
 import { useAuthStore } from "../../stores/auth";
 import { showErrorNotification } from "../../utils/errors";
+import { showNotification } from "@mantine/notifications";
 
 const Issues: NextPageWithLayout = () => {
   const { data: session } = useSession();
@@ -140,6 +141,11 @@ const IssueCard = ({
       }
       setEditable(false);
       form.reset({ points: 0, targetStateId: "" });
+      showNotification({
+        color: "green",
+        title: "Success",
+        message: "Reward set!",
+      });
     },
     onError: showErrorNotification,
   });
