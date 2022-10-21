@@ -8,6 +8,7 @@ import {
   Group,
   Avatar,
   Stack,
+  Menu,
 } from "@mantine/core";
 import {
   IconCheckbox,
@@ -15,6 +16,7 @@ import {
   IconPodium,
   IconHeartHandshake,
   IconMessage,
+  IconLogout,
 } from "@tabler/icons";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
@@ -182,21 +184,37 @@ export function Sidebar() {
       </Navbar.Section>
 
       <Navbar.Section className={classes.section} px="md" mb={0}>
-        <UnstyledButton onClick={() => signOut()}>
-          <Group>
-            <Avatar size={40} color="blue" radius="xl">
-              {getInitials(auth.user?.name || "")}
-            </Avatar>
-            <Stack spacing={4}>
-              <Text size="sm" inline>
-                {auth.user?.name}
-              </Text>
-              <Text size="xs" color="dimmed" inline>
-                {auth.user?.organization.name}
-              </Text>
-            </Stack>
-          </Group>
-        </UnstyledButton>
+        <Menu shadow="md" width={200}>
+          <Menu.Target>
+            <UnstyledButton>
+              <Group>
+                <Avatar size={40} color="blue" radius="xl">
+                  {getInitials(auth.user?.name || "")}
+                </Avatar>
+                <Stack spacing={4}>
+                  <Text size="sm" inline>
+                    {auth.user?.name}
+                  </Text>
+                  <Text size="xs" color="dimmed" inline>
+                    {auth.user?.organization.name}
+                  </Text>
+                </Stack>
+              </Group>
+            </UnstyledButton>
+          </Menu.Target>
+
+          <Menu.Dropdown>
+            <Menu.Item
+              color="red"
+              icon={<IconLogout size={14} />}
+              onClick={() => {
+                signOut();
+              }}
+            >
+              Logout
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
       </Navbar.Section>
     </Navbar>
   );
