@@ -62,7 +62,11 @@ const AuthWrapper = ({ children }: { children: ReactElement }) => {
 
       return data;
     },
-    { enabled: !!session.data?.accessToken }
+    {
+      enabled: !!session.data?.accessToken,
+      refetchOnWindowFocus: false,
+      retry: false,
+    }
   );
 
   useEffect(() => {

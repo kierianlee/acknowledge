@@ -20,7 +20,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { ReactElement, useState } from "react";
+import { ReactElement, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { trpc } from "../utils/trpc";
 import DefaultLayout from "../components/layouts/default/default-layout";
@@ -29,27 +29,72 @@ import {
   convertPriorityNumberToIcon,
   convertPriorityNumberToLabel,
 } from "../utils/linear";
-import { IconPencil, IconPlus, IconTrophy } from "@tabler/icons";
+import { IconMedal, IconPencil, IconPlus, IconTrophy } from "@tabler/icons";
 import { useAuthStore } from "../stores/auth";
 import { showErrorNotification } from "../utils/errors";
 import { showNotification } from "@mantine/notifications";
+import Filter, {
+  DataType,
+  FilterInputOption,
+  FilterValue,
+  InputType,
+  QueryType,
+  removeFilterFromFilterList,
+} from "../components/filter";
+import { mergeWith } from "lodash";
+import { SelectItem } from "../components/filter/filter-input";
+
+const filterOptions: FilterInputOption[] = [
+  {
+    label: "Reward",
+    accessor: "reward",
+    input: InputType.SELECT,
+    queries: [QueryType.EQUALS],
+    type: DataType.OBJECT,
+    options: [
+      {
+        label: "Has Reward",
+        value: {
+          attachments: { some: { title: { eq: "Acknowledge" } } },
+        },
+      },
+      {
+        label: "No Reward",
+        value: {
+          attachments: {
+            or: [
+              { every: { title: { neq: "Acknowledge" } } },
+              { length: { eq: 0 } },
+            ],
+          },
+        },
+      },
+      {
+        label: "Claimed",
+        value: {
+          attachments: { some: { title: { eq: "Acknowledge" } } },
+        },
+      },
+      { label: "Unclaimed", value: "unclaimed" },
+    ],
+  },
+];
 
 const Issues: NextPageWithLayout = () => {
   const { data: session } = useSession();
   const gql = getSdk(gqlClient);
+  const [filterMenuOpened, setFilterMenuOpened] = useState(false);
+  const [filters, setFilters] = useState<FilterValue[]>([]);
   const [issuesQueryVariables, setIssuesQueryVariables] =
     useState<IssuesQueryVariables>({
-      filter: {
-        // attachments: {
-        //   or: [
-        //     { every: { title: { neq: "Acknowledge" } } },
-        //     { length: { eq: 0 } },
-        //   ],
-        // },
-      },
+      filter: {},
     });
 
-  const { data: issuesData, refetch: refetchIssues } = useQuery(
+  const {
+    data: issuesData,
+    refetch: refetchIssues,
+    isFetched,
+  } = useQuery(
     ["issues"],
     async () => {
       const data = await gql.Issues(issuesQueryVariables, {
@@ -58,7 +103,11 @@ const Issues: NextPageWithLayout = () => {
 
       return data;
     },
-    { enabled: !!session?.accessToken }
+    {
+      enabled: !!session?.accessToken,
+      retry: false,
+      refetchOnWindowFocus: false,
+    }
   );
   const { data: workflowStatesData } = useQuery(
     ["workflowStates"],
@@ -70,8 +119,26 @@ const Issues: NextPageWithLayout = () => {
 
       return data;
     },
-    { enabled: !!session?.accessToken }
+    {
+      enabled: !!session?.accessToken,
+      retry: false,
+      refetchOnWindowFocus: false,
+    }
   );
+
+  useEffect(() => {
+    console.log(isFetched);
+    if (isFetched) {
+      setIssuesQueryVariables((prev) => ({
+        ...prev,
+        filter: mergeWith(
+          {},
+          ...filters.map((item) => (item.value as SelectItem)?.value)
+        ),
+      }));
+      refetchIssues();
+    }
+  }, [filters, refetchIssues, isFetched]);
 
   return (
     <Box p="lg">
@@ -79,15 +146,34 @@ const Issues: NextPageWithLayout = () => {
         Issues
       </Title>
       <Group mb="xl">
-        <Button
-          size="xs"
-          variant="outline"
-          color="gray"
-          sx={{ borderStyle: "dotted" }}
-          leftIcon={<IconPlus size="14px" />}
-        >
-          Add Filter
-        </Button>
+        <Filter.Menu
+          target={(onOpen) => (
+            <Button
+              size="xs"
+              variant="outline"
+              color="gray"
+              sx={{ borderStyle: "dotted" }}
+              leftIcon={<IconPlus size="14px" />}
+              onClick={onOpen}
+            >
+              Add Filter
+            </Button>
+          )}
+          opened={filterMenuOpened}
+          onClose={() => setFilterMenuOpened(false)}
+          onOpen={() => setFilterMenuOpened(true)}
+          onSubmit={(value) => setFilters((prev) => [...prev, value])}
+          options={filterOptions}
+        />
+        {filters.map((filter, index) => (
+          <Filter.Badge
+            key={index}
+            onRemove={(filter) =>
+              setFilters((prev) => removeFilterFromFilterList(filter, prev))
+            }
+            value={filter}
+          />
+        ))}
       </Group>
       {issuesData?.issues.nodes.map((item, index) => (
         <IssueCard
@@ -127,6 +213,7 @@ const IssueCard = ({
     (item) => item.title === "Acknowledge"
   )?.metadata;
   const points = acknowledgeMetadata?.points;
+  const claimed = acknowledgeMetadata?.claimed;
 
   const form = useForm<IssueCardFormValues>({
     defaultValues: {
@@ -169,6 +256,22 @@ const IssueCard = ({
       },
       onError: showErrorNotification,
     });
+  const { mutate: deleteRewardMutate, isLoading: deleteRewardLoading } =
+    trpc.issues.deleteReward.useMutation({
+      onSuccess: () => {
+        if (actionCallback) {
+          actionCallback();
+        }
+        setEditable(false);
+        form.reset({ points: 0, targetStateId: "" });
+        showNotification({
+          color: "green",
+          title: "Success",
+          message: "Reward deleted!",
+        });
+      },
+      onError: showErrorNotification,
+    });
 
   const PriorityIcon = convertPriorityNumberToIcon(issue?.priority || 0);
 
@@ -205,6 +308,7 @@ const IssueCard = ({
             size="lg"
             onClick={() => setEditable(true)}
             sx={(theme) => ({ borderColor: theme.colors.gray[3] })}
+            disabled={claimed}
           >
             <IconPencil size="16px" />
           </ActionIcon>
@@ -227,6 +331,16 @@ const IssueCard = ({
                 <IconTrophy size="16px" />
                 <Text sx={{ fontSize: "12px" }} transform="none" weight={600}>
                   {points} points
+                </Text>
+              </Group>
+            </Badge>
+          )}
+          {claimed && (
+            <Badge px={4} py="md" radius="md" color="gray">
+              <Group align="center" spacing={4}>
+                <IconMedal size="16px" />
+                <Text sx={{ fontSize: "12px" }} transform="none" weight={600}>
+                  Reward claimed
                 </Text>
               </Group>
             </Badge>
@@ -260,6 +374,7 @@ const IssueCard = ({
                         error={!!error}
                         min={1}
                         max={100}
+                        disabled={claimed}
                       />
                     )}
                     rules={{ required: true }}
@@ -288,6 +403,7 @@ const IssueCard = ({
                       size="xs"
                       required
                       error={!!error}
+                      disabled={claimed}
                     />
                   )}
                   rules={{ required: true }}
@@ -303,10 +419,21 @@ const IssueCard = ({
               >
                 Cancel
               </Button>
+              {!!points && !claimed && (
+                <Button
+                  size="xs"
+                  color="red"
+                  disabled={createRewardLoading || updateRewardLoading}
+                  loading={deleteRewardLoading}
+                >
+                  Remove Reward
+                </Button>
+              )}
               <Button
                 type="submit"
                 size="xs"
                 loading={createRewardLoading || updateRewardLoading}
+                disabled={deleteRewardLoading || claimed}
               >
                 Assign
               </Button>
