@@ -163,7 +163,9 @@ export const issuesRouter = t.router({
           reward.attachmentId,
           {
             title: "Acknowledge",
-            subtitle: `${input.points} points`,
+            subtitle: reward.claimed
+              ? `${input.points} points (claimed)`
+              : `${input.points} points`,
             metadata: {
               rewardId: reward.id,
               points: input.points,

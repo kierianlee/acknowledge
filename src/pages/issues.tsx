@@ -34,7 +34,6 @@ import { useAuthStore } from "../stores/auth";
 import { showErrorNotification } from "../utils/errors";
 import { showNotification } from "@mantine/notifications";
 import Filter, {
-  DataType,
   FilterInputOption,
   FilterValue,
   InputType,
@@ -46,11 +45,30 @@ import { SelectItem } from "../components/filter/filter-input";
 
 const filterOptions: FilterInputOption[] = [
   {
+    label: "Title",
+    accessor: "title",
+    input: InputType.TEXT,
+    queries: [QueryType.CONTAINS, QueryType.EQUALS],
+    valueTransformer: (val, query) => ({
+      title: {
+        ...(query === QueryType.CONTAINS
+          ? {
+              containsIgnoreCase: val,
+            }
+          : {}),
+        ...(query === QueryType.EQUALS
+          ? {
+              eqIgnoreCase: val,
+            }
+          : {}),
+      },
+    }),
+  },
+  {
     label: "Reward",
     accessor: "reward",
     input: InputType.SELECT,
     queries: [QueryType.EQUALS],
-    type: DataType.OBJECT,
     options: [
       {
         label: "Has Reward",
@@ -72,10 +90,23 @@ const filterOptions: FilterInputOption[] = [
       {
         label: "Claimed",
         value: {
-          attachments: { some: { title: { eq: "Acknowledge" } } },
+          attachments: {
+            some: {
+              title: { startsWith: "Acknowledge", endsWith: "(claimed)" },
+            },
+          },
         },
       },
-      { label: "Unclaimed", value: "unclaimed" },
+      {
+        label: "Unclaimed",
+        value: {
+          attachments: {
+            some: {
+              title: { startsWith: "Acknowledge", notEndsWith: "(claimed)" },
+            },
+          },
+        },
+      },
     ],
   },
 ];
@@ -95,7 +126,7 @@ const Issues: NextPageWithLayout = () => {
     refetch: refetchIssues,
     isFetched,
   } = useQuery(
-    ["issues"],
+    ["issues", issuesQueryVariables],
     async () => {
       const data = await gql.Issues(issuesQueryVariables, {
         Authorization: session?.accessToken || "",
@@ -127,16 +158,17 @@ const Issues: NextPageWithLayout = () => {
   );
 
   useEffect(() => {
-    console.log(isFetched);
     if (isFetched) {
+      console.log(filters);
       setIssuesQueryVariables((prev) => ({
         ...prev,
         filter: mergeWith(
           {},
-          ...filters.map((item) => (item.value as SelectItem)?.value)
+          ...filters.map(
+            (item) => item.transformedValue ?? (item.value as SelectItem)?.value
+          )
         ),
       }));
-      refetchIssues();
     }
   }, [filters, refetchIssues, isFetched]);
 

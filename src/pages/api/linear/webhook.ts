@@ -122,7 +122,7 @@ const handler = nc<NextApiRequest, NextApiResponse>({
 
                 await linear.attachmentUpdate(reward.attachmentId, {
                   title: "Acknowledge",
-                  subtitle: `${reward.value} points`,
+                  subtitle: `${reward.value} points (claimed)`,
                   metadata: {
                     rewardId: reward.id,
                     points: reward.value,

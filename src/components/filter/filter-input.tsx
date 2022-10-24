@@ -24,15 +24,6 @@ enum QueryType {
   EQUALS = "equals",
 }
 
-enum DataType {
-  ID = "id",
-  STRING = "string",
-  NUMBER = "number",
-  BOOLEAN = "boolean",
-  DATE = "date",
-  OBJECT = "object",
-}
-
 export type SelectItem = SingleValue<{
   label: string;
   value: any;
@@ -45,7 +36,7 @@ export interface FilterInputOption {
   input: InputType;
   options?: SelectItem[];
   queries: QueryType[];
-  type: DataType;
+  valueTransformer?: (value: string | SelectItem, query?: QueryType) => any;
 }
 
 export interface FilterValue {
@@ -54,7 +45,7 @@ export interface FilterValue {
   query: QueryType;
   value: string | SelectItem;
   valueDisplay?: string;
-  type: DataType;
+  transformedValue?: any;
 }
 
 interface FilterInputProps {
@@ -82,8 +73,13 @@ const getQueryIcon = (type?: QueryType) => {
 };
 
 const FilterInput = ({ options, onSubmit }: FilterInputProps) => {
-  const [selectedOption, setSelectedOption] = useState<FilterInputOption>();
-  const [value, setValue] = useState<FilterValue["value"]>("");
+  const [selectedOption, setSelectedOption] = useState<
+    FilterInputOption | undefined
+  >(undefined);
+  const [textInputValue, setTextInputValue] = useState("");
+  const [selectInputValue, setSelectInputValue] = useState<
+    SelectItem | undefined
+  >(undefined);
   const [query, setQuery] = useState<QueryType>();
   const theme = useMantineTheme();
 
@@ -91,7 +87,7 @@ const FilterInput = ({ options, onSubmit }: FilterInputProps) => {
     () => ({
       option: (provided) => ({
         ...provided,
-        fontSize: "13px",
+        fontSize: "12px",
         padding: "6px 12px",
       }),
       container: (provided) => ({
@@ -101,12 +97,12 @@ const FilterInput = ({ options, onSubmit }: FilterInputProps) => {
       control: (provided) => ({
         ...provided,
         borderColor: theme.colors.gray[3],
-        fontSize: "13px",
+        fontSize: "12px",
         width: "100%",
         minHeight: "0px",
       }),
       input: (provided) => ({ ...provided, margin: 0 }),
-      noOptionsMessage: (provided) => ({ ...provided, fontSize: "13px" }),
+      noOptionsMessage: (provided) => ({ ...provided, fontSize: "12px" }),
       dropdownIndicator: (provided) => ({
         ...provided,
         paddingBlock: 0,
@@ -125,6 +121,16 @@ const FilterInput = ({ options, onSubmit }: FilterInputProps) => {
       primary25: theme.colors[theme.primaryColor][1],
     },
   });
+
+  const value = useMemo(
+    () =>
+      selectedOption?.input === InputType.TEXT
+        ? textInputValue
+        : selectedOption?.input === InputType.SELECT
+        ? selectInputValue ?? ""
+        : null,
+    [selectedOption, selectInputValue, textInputValue]
+  );
 
   return (
     <Stack spacing={4}>
@@ -172,8 +178,11 @@ const FilterInput = ({ options, onSubmit }: FilterInputProps) => {
               <TextInput
                 placeholder="Enter value"
                 size="xs"
-                value={value as string}
-                onChange={(event) => setValue(event.currentTarget.value)}
+                value={textInputValue}
+                onChange={(event) =>
+                  setTextInputValue(event.currentTarget.value)
+                }
+                sx={{ flex: "1" }}
               />
             )}
             {selectedOption.input === InputType.SELECT && (
@@ -182,12 +191,15 @@ const FilterInput = ({ options, onSubmit }: FilterInputProps) => {
                 theme={selectTheme}
                 styles={selectStyles}
                 options={selectedOption?.options || []}
-                onChange={(val) => setValue(val!)}
+                onChange={(val) => {
+                  setSelectInputValue(val!);
+                }}
+                value={selectInputValue}
               />
             )}
           </>
         ) : (
-          <TextInput disabled size="xs" />
+          <TextInput disabled size="xs" sx={{ flex: "1" }} />
         )}
       </Group>
       <Button
@@ -205,9 +217,21 @@ const FilterInput = ({ options, onSubmit }: FilterInputProps) => {
                     )?.label,
                   }
                 : {}),
-              value,
+              value:
+                selectedOption.input === InputType.TEXT
+                  ? textInputValue
+                  : selectedOption.input === InputType.SELECT
+                  ? selectInputValue ?? ""
+                  : "",
+              ...(selectedOption.valueTransformer && !!value
+                ? {
+                    transformedValue: selectedOption.valueTransformer(
+                      value,
+                      query
+                    ),
+                  }
+                : {}),
               query: query!,
-              type: selectedOption.type,
             });
           }
         }}
@@ -218,4 +242,4 @@ const FilterInput = ({ options, onSubmit }: FilterInputProps) => {
   );
 };
 
-export { FilterInput, InputType, QueryType, DataType };
+export { FilterInput, InputType, QueryType };

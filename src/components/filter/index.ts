@@ -20,7 +20,6 @@ const removeFilterFromFilterList = (
 
 export default Filter;
 export {
-  DataType,
   type FilterInputOption,
   type FilterValue,
   InputType,
