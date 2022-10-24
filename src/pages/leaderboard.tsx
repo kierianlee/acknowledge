@@ -57,11 +57,11 @@ const UserCard = ({ user, rank }: UserCardProps) => {
         </Avatar>
         <Stack sx={{ flex: "1" }} spacing={0}>
           <Box sx={{ flex: "1" }}>
-            <Text weight={600}>{user.name}</Text>
+            <Text weight={500}>{user.name}</Text>
           </Box>
           <Group spacing={4}>
             <IconMedal size="16px" />
-            <Text color="dimmed" size="sm">
+            <Text color="dimmed" size="xs">
               {user.points} points
             </Text>
           </Group>

@@ -347,7 +347,7 @@ const IssueCard = ({
         </Box>
       )}
       <Stack p="md">
-        <Text weight={600}>{issue?.title}</Text>
+        <Text weight={500}>{issue?.title}</Text>
         <Group>
           <Badge px={4} py="md" radius="md" color="gray">
             <Group align="center" spacing={4}>

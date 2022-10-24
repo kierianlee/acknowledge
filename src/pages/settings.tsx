@@ -56,7 +56,7 @@ const Settings = () => {
         component="form"
         onSubmit={configForm.handleSubmit(handleConfigFormSubmission)}
       >
-        <Title order={5} mb="xl" weight={400}>
+        <Title order={5} mb="xl" weight={500}>
           Configuration
         </Title>
         <Grid>
