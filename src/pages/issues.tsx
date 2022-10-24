@@ -124,7 +124,7 @@ const Issues: NextPageWithLayout = () => {
   const {
     data: issuesData,
     refetch: refetchIssues,
-    isFetched,
+    isFetched: issuesIsFetched,
   } = useQuery(
     ["issues", issuesQueryVariables],
     async () => {
@@ -158,7 +158,7 @@ const Issues: NextPageWithLayout = () => {
   );
 
   useEffect(() => {
-    if (isFetched) {
+    if (issuesIsFetched) {
       console.log(filters);
       setIssuesQueryVariables((prev) => ({
         ...prev,
@@ -170,7 +170,7 @@ const Issues: NextPageWithLayout = () => {
         ),
       }));
     }
-  }, [filters, refetchIssues, isFetched]);
+  }, [filters, refetchIssues, issuesIsFetched]);
 
   return (
     <Box p="lg">
@@ -333,7 +333,7 @@ const IssueCard = ({
         shadow: theme.shadows.xl,
       })}
     >
-      {!editable && auth.user?.admin && (
+      {!editable && auth.linearUser?.admin && (
         <Box sx={{ position: "absolute", right: "16px", top: "16px" }}>
           <ActionIcon
             variant="outline"

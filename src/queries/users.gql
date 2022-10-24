@@ -1,0 +1,16 @@
+query Users($filter: UserFilter) {
+  users(filter: $filter) {
+    nodes {
+      id
+      name
+    }
+  }
+}
+
+query User($id: String!) {
+  user(id: $id) {
+    id
+    name
+    email
+  }
+}

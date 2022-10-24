@@ -49,10 +49,10 @@ function App({
 
 const AuthWrapper = ({ children }: { children: ReactElement }) => {
   const session = useSession();
-  const { setUser } = useAuthStore();
+  const { setLinearUser, setUser } = useAuthStore();
   const gql = getSdk(gqlClient);
 
-  const { data: meData } = useQuery(
+  const { data: linearMeData } = useQuery(
     ["me"],
     async () => {
       const data = await gql.Me(
@@ -68,11 +68,23 @@ const AuthWrapper = ({ children }: { children: ReactElement }) => {
       retry: false,
     }
   );
+  const { data: meData } = trpc.users.me.useQuery(undefined, {
+    enabled: !!session.data?.accessToken,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
 
   useEffect(() => {
     if (session.status === "authenticated") {
+      if (linearMeData) {
+        setLinearUser(linearMeData.viewer);
+      }
+    }
+  }, [session, linearMeData, setLinearUser]);
+  useEffect(() => {
+    if (session.status === "authenticated") {
       if (meData) {
-        setUser(meData.viewer);
+        setUser(meData);
       }
     }
   }, [session, meData, setUser]);

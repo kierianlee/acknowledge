@@ -110,13 +110,13 @@ export function Sidebar() {
     () => [
       { icon: IconCheckbox, label: "Issues", path: "/issues" },
       { icon: IconPodium, label: "Leaderboard", path: "/leaderboard" },
-      { icon: IconHeartHandshake, label: "Thanks", path: "/thanks" },
+      { icon: IconHeartHandshake, label: "Acknowledge", path: "/acknowledge" },
       { icon: IconMessage, label: "Feed", path: "/feed" },
-      ...(auth.user?.admin
+      ...(auth.linearUser?.admin
         ? [{ icon: IconSettings, label: "Settings", path: "/settings" }]
         : []),
     ],
-    [auth.user]
+    [auth.linearUser]
   );
 
   const mainLinks = links.map((link) => (
@@ -197,14 +197,15 @@ export function Sidebar() {
             <UnstyledButton>
               <Group>
                 <Avatar size={40} color="blue" radius="xl">
-                  {getInitials(auth.user?.name || "")}
+                  {getInitials(auth.linearUser?.name || "")}
                 </Avatar>
                 <Stack spacing={4}>
                   <Text size="sm" inline>
-                    {auth.user?.name}
+                    {auth.linearUser?.name}
                   </Text>
                   <Text size="xs" color="dimmed" inline>
-                    {auth.user?.organization.name}
+                    {/* {auth.linearUser?.organization.name} */}
+                    {auth.user?.points} points
                   </Text>
                 </Stack>
               </Group>

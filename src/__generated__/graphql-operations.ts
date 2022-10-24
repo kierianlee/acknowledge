@@ -2162,6 +2162,14 @@ export type IssueCollectionFilter = {
   estimate?: InputMaybe<EstimateComparator>;
   /** Filters that needs to be matched by all issues. */
   every?: InputMaybe<IssueFilter>;
+  /** Comparator for filtering issues which are blocked. */
+  hasBlockedByRelations?: InputMaybe<RelationExistsComparator>;
+  /** Comparator for filtering issues which are blocking. */
+  hasBlockingRelations?: InputMaybe<RelationExistsComparator>;
+  /** Comparator for filtering issues which are duplicates. */
+  hasDuplicateRelations?: InputMaybe<RelationExistsComparator>;
+  /** Comparator for filtering issues with relations. */
+  hasRelatedRelations?: InputMaybe<RelationExistsComparator>;
   /** Comparator for the identifier. */
   id?: InputMaybe<IdComparator>;
   /** Filters that issue labels must satisfy. */
@@ -2172,6 +2180,8 @@ export type IssueCollectionFilter = {
   number?: InputMaybe<NumberComparator>;
   /** Compound filters, one of which need to be matched by the issue. */
   or?: InputMaybe<Array<IssueCollectionFilter>>;
+  /** Filters that the issue parent must satisfy. */
+  parent?: InputMaybe<NullableIssueFilter>;
   /** Comparator for the issues priority. */
   priority?: InputMaybe<NullableNumberComparator>;
   /** Filters that the issues project must satisfy. */
@@ -2188,6 +2198,8 @@ export type IssueCollectionFilter = {
   startedAt?: InputMaybe<NullableDateComparator>;
   /** Filters that the issues state must satisfy. */
   state?: InputMaybe<WorkflowStateFilter>;
+  /** Filters that issue subscribers must satisfy. */
+  subscribers?: InputMaybe<UserCollectionFilter>;
   /** Filters that the issues team must satisfy. */
   team?: InputMaybe<TeamFilter>;
   /** Comparator for the issues title. */
@@ -2289,6 +2301,14 @@ export type IssueFilter = {
   dueDate?: InputMaybe<NullableTimelessDateComparator>;
   /** Comparator for the issues estimate. */
   estimate?: InputMaybe<EstimateComparator>;
+  /** Comparator for filtering issues which are blocked. */
+  hasBlockedByRelations?: InputMaybe<RelationExistsComparator>;
+  /** Comparator for filtering issues which are blocking. */
+  hasBlockingRelations?: InputMaybe<RelationExistsComparator>;
+  /** Comparator for filtering issues which are duplicates. */
+  hasDuplicateRelations?: InputMaybe<RelationExistsComparator>;
+  /** Comparator for filtering issues with relations. */
+  hasRelatedRelations?: InputMaybe<RelationExistsComparator>;
   /** Comparator for the identifier. */
   id?: InputMaybe<IdComparator>;
   /** Filters that issue labels must satisfy. */
@@ -2297,6 +2317,8 @@ export type IssueFilter = {
   number?: InputMaybe<NumberComparator>;
   /** Compound filters, one of which need to be matched by the issue. */
   or?: InputMaybe<Array<IssueFilter>>;
+  /** Filters that the issue parent must satisfy. */
+  parent?: InputMaybe<NullableIssueFilter>;
   /** Comparator for the issues priority. */
   priority?: InputMaybe<NullableNumberComparator>;
   /** Filters that the issues project must satisfy. */
@@ -2311,6 +2333,8 @@ export type IssueFilter = {
   startedAt?: InputMaybe<NullableDateComparator>;
   /** Filters that the issues state must satisfy. */
   state?: InputMaybe<WorkflowStateFilter>;
+  /** Filters that issue subscribers must satisfy. */
+  subscribers?: InputMaybe<UserCollectionFilter>;
   /** Filters that the issues team must satisfy. */
   team?: InputMaybe<TeamFilter>;
   /** Comparator for the issues title. */
@@ -4680,6 +4704,82 @@ export type NullableInitiativeFilter = {
   projects?: InputMaybe<ProjectCollectionFilter>;
   /** Comparator for the initiative sort order. */
   sortOrder?: InputMaybe<NumberComparator>;
+  /** Comparator for the updated at date. */
+  updatedAt?: InputMaybe<DateComparator>;
+};
+
+/** Issue filtering options. */
+export type NullableIssueFilter = {
+  /** Compound filters, all of which need to be matched by the issue. */
+  and?: InputMaybe<Array<NullableIssueFilter>>;
+  /** Filters that the issues assignee must satisfy. */
+  assignee?: InputMaybe<NullableUserFilter>;
+  /** Filters that the issues attachments must satisfy. */
+  attachments?: InputMaybe<AttachmentCollectionFilter>;
+  /** Comparator for the issues auto archived at date. */
+  autoArchivedAt?: InputMaybe<NullableDateComparator>;
+  /** Comparator for the issues auto closed at date. */
+  autoClosedAt?: InputMaybe<NullableDateComparator>;
+  /** Comparator for the issues canceled at date. */
+  canceledAt?: InputMaybe<NullableDateComparator>;
+  /** Filters that the child issues must satisfy. */
+  children?: InputMaybe<IssueCollectionFilter>;
+  /** Filters that the issues comments must satisfy. */
+  comments?: InputMaybe<CommentCollectionFilter>;
+  /** Comparator for the issues completed at date. */
+  completedAt?: InputMaybe<NullableDateComparator>;
+  /** Comparator for the created at date. */
+  createdAt?: InputMaybe<DateComparator>;
+  /** Filters that the issues creator must satisfy. */
+  creator?: InputMaybe<NullableUserFilter>;
+  /** Filters that the issues cycle must satisfy. */
+  cycle?: InputMaybe<NullableCycleFilter>;
+  /** Comparator for the issues description. */
+  description?: InputMaybe<NullableStringComparator>;
+  /** Comparator for the issues due date. */
+  dueDate?: InputMaybe<NullableTimelessDateComparator>;
+  /** Comparator for the issues estimate. */
+  estimate?: InputMaybe<EstimateComparator>;
+  /** Comparator for filtering issues which are blocked. */
+  hasBlockedByRelations?: InputMaybe<RelationExistsComparator>;
+  /** Comparator for filtering issues which are blocking. */
+  hasBlockingRelations?: InputMaybe<RelationExistsComparator>;
+  /** Comparator for filtering issues which are duplicates. */
+  hasDuplicateRelations?: InputMaybe<RelationExistsComparator>;
+  /** Comparator for filtering issues with relations. */
+  hasRelatedRelations?: InputMaybe<RelationExistsComparator>;
+  /** Comparator for the identifier. */
+  id?: InputMaybe<IdComparator>;
+  /** Filters that issue labels must satisfy. */
+  labels?: InputMaybe<IssueLabelCollectionFilter>;
+  /** Filter based on the existence of the relation. */
+  null?: InputMaybe<Scalars['Boolean']>;
+  /** Comparator for the issues number. */
+  number?: InputMaybe<NumberComparator>;
+  /** Compound filters, one of which need to be matched by the issue. */
+  or?: InputMaybe<Array<NullableIssueFilter>>;
+  /** Filters that the issue parent must satisfy. */
+  parent?: InputMaybe<NullableIssueFilter>;
+  /** Comparator for the issues priority. */
+  priority?: InputMaybe<NullableNumberComparator>;
+  /** Filters that the issues project must satisfy. */
+  project?: InputMaybe<NullableProjectFilter>;
+  /** [Internal] Comparator for the issues content. */
+  searchableContent?: InputMaybe<ContentComparator>;
+  /** Filters that the issues snoozer must satisfy. */
+  snoozedBy?: InputMaybe<NullableUserFilter>;
+  /** Comparator for the issues snoozed until date. */
+  snoozedUntilAt?: InputMaybe<NullableDateComparator>;
+  /** Comparator for the issues started at date. */
+  startedAt?: InputMaybe<NullableDateComparator>;
+  /** Filters that the issues state must satisfy. */
+  state?: InputMaybe<WorkflowStateFilter>;
+  /** Filters that issue subscribers must satisfy. */
+  subscribers?: InputMaybe<UserCollectionFilter>;
+  /** Filters that the issues team must satisfy. */
+  team?: InputMaybe<TeamFilter>;
+  /** Comparator for the issues title. */
+  title?: InputMaybe<StringComparator>;
   /** Comparator for the updated at date. */
   updatedAt?: InputMaybe<DateComparator>;
 };
@@ -7076,6 +7176,14 @@ export type ReactionPayload = {
   success: Scalars['Boolean'];
 };
 
+/** Comparator for relation existence. */
+export type RelationExistsComparator = {
+  /** Equals constraint. */
+  eq?: InputMaybe<Scalars['Boolean']>;
+  /** Not equals constraint. */
+  neq?: InputMaybe<Scalars['Boolean']>;
+};
+
 /** A roadmap for projects. */
 export type Roadmap = Node & {
   __typename?: 'Roadmap';
@@ -7093,6 +7201,8 @@ export type Roadmap = Node & {
   name: Scalars['String'];
   /** The organization of the roadmap. */
   organization: Organization;
+  /** Projects associated with the roadmap. */
+  projects: ProjectConnection;
   /** The roadmap's unique URL slug. */
   slugId: Scalars['String'];
   /**
@@ -7100,6 +7210,18 @@ export type Roadmap = Node & {
    *     entity hasn't been updated after creation.
    */
   updatedAt: Scalars['DateTime'];
+};
+
+
+/** A roadmap for projects. */
+export type RoadmapProjectsArgs = {
+  after?: InputMaybe<Scalars['String']>;
+  before?: InputMaybe<Scalars['String']>;
+  filter?: InputMaybe<ProjectFilter>;
+  first?: InputMaybe<Scalars['Int']>;
+  includeArchived?: InputMaybe<Scalars['Boolean']>;
+  last?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<PaginationOrderBy>;
 };
 
 /** Roadmap collection filtering options. */
@@ -8373,6 +8495,40 @@ export type UserAuthorizedApplication = {
   webhooksEnabled: Scalars['Boolean'];
 };
 
+/** User filtering options. */
+export type UserCollectionFilter = {
+  /** Comparator for the user's activity status. */
+  active?: InputMaybe<BooleanComparator>;
+  /** Comparator for the user's admin status. */
+  admin?: InputMaybe<BooleanComparator>;
+  /** Compound filters, all of which need to be matched by the user. */
+  and?: InputMaybe<Array<UserCollectionFilter>>;
+  /** Filters that the users assigned issues must satisfy. */
+  assignedIssues?: InputMaybe<IssueCollectionFilter>;
+  /** Comparator for the created at date. */
+  createdAt?: InputMaybe<DateComparator>;
+  /** Comparator for the user's display name. */
+  displayName?: InputMaybe<StringComparator>;
+  /** Comparator for the user's email. */
+  email?: InputMaybe<StringComparator>;
+  /** Filters that needs to be matched by all users. */
+  every?: InputMaybe<UserFilter>;
+  /** Comparator for the identifier. */
+  id?: InputMaybe<IdComparator>;
+  /** Filter based on the currently authenticated user. Set to true to filter for the authenticated user, false for any other user. */
+  isMe?: InputMaybe<BooleanComparator>;
+  /** Comparator for the collection length. */
+  length?: InputMaybe<NumberComparator>;
+  /** Comparator for the user's name. */
+  name?: InputMaybe<StringComparator>;
+  /** Compound filters, one of which need to be matched by the user. */
+  or?: InputMaybe<Array<UserCollectionFilter>>;
+  /** Filters that needs to be matched by some users. */
+  some?: InputMaybe<UserFilter>;
+  /** Comparator for the updated at date. */
+  updatedAt?: InputMaybe<DateComparator>;
+};
+
 export type UserConnection = {
   __typename?: 'UserConnection';
   edges: Array<UserEdge>;
@@ -8922,6 +9078,20 @@ export type IssuesQueryVariables = Exact<{
 
 export type IssuesQuery = { __typename?: 'Query', issues: { __typename?: 'IssueConnection', nodes: Array<{ __typename?: 'Issue', id: string, title: string, priority: number, attachments: { __typename?: 'AttachmentConnection', nodes: Array<{ __typename?: 'Attachment', id: string, title: string, metadata: any }> } }> } };
 
+export type UsersQueryVariables = Exact<{
+  filter?: InputMaybe<UserFilter>;
+}>;
+
+
+export type UsersQuery = { __typename?: 'Query', users: { __typename?: 'UserConnection', nodes: Array<{ __typename?: 'User', id: string, name: string }> } };
+
+export type UserQueryVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type UserQuery = { __typename?: 'Query', user: { __typename?: 'User', id: string, name: string, email: string } };
+
 export type WorkflowStatesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -8968,6 +9138,25 @@ export const IssuesDocument = gql`
   }
 }
     `;
+export const UsersDocument = gql`
+    query Users($filter: UserFilter) {
+  users(filter: $filter) {
+    nodes {
+      id
+      name
+    }
+  }
+}
+    `;
+export const UserDocument = gql`
+    query User($id: String!) {
+  user(id: $id) {
+    id
+    name
+    email
+  }
+}
+    `;
 export const WorkflowStatesDocument = gql`
     query WorkflowStates {
   workflowStates {
@@ -8993,6 +9182,12 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     Issues(variables?: IssuesQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<IssuesQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<IssuesQuery>(IssuesDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'Issues', 'query');
+    },
+    Users(variables?: UsersQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<UsersQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<UsersQuery>(UsersDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'Users', 'query');
+    },
+    User(variables: UserQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<UserQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<UserQuery>(UserDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'User', 'query');
     },
     WorkflowStates(variables?: WorkflowStatesQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<WorkflowStatesQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<WorkflowStatesQuery>(WorkflowStatesDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'WorkflowStates', 'query');

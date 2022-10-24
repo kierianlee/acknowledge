@@ -17,10 +17,24 @@ model Reward {
   claimedAt      DateTime?
   claimedBy      User?        @relation("rewardClaimedBy", fields: [claimedById], references: [id])
   claimedById    String?
-  transaction    Transaction?
+  pointLogs      PointLog[]
   createdBy      User         @relation("rewardCreatedBy", fields: [createdById], references: [id])
   createdById    String
   actions        Action[]
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime     @default(now())
+}
+
+model PointLog {
+  id             String       @id @default(cuid())
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  previousPoints Int
+  newPoints      Int
+  reward         Reward?      @relation(fields: [rewardId], references: [id])
+  rewardId       String?      @unique
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
   updatedAt      DateTime     @updatedAt
@@ -31,14 +45,13 @@ model Transaction {
   id             String       @id @default(cuid())
   beneficiary    User         @relation("transactionBeneficiary", fields: [beneficiaryId], references: [id])
   beneficiaryId  String
-  benefactor     User?        @relation("transactionBenefactor", fields: [benefactorId], references: [id])
-  benefactorId   String?
-  previousPoints Int
-  newPoints      Int
-  reward         Reward?      @relation(fields: [rewardId], references: [id])
-  rewardId       String?      @unique
+  benefactor     User         @relation("transactionBenefactor", fields: [benefactorId], references: [id])
+  benefactorId   String
+  value          Int
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
+  message        String
+  actions        Action[]
   updatedAt      DateTime     @updatedAt
   createdAt      DateTime     @default(now())
 }
@@ -53,6 +66,7 @@ enum ActionType {
   REWARD_CREATE
   REWARD_UPDATE
   REWARD_DELETE
+  REWARD_CLAIM
 }
 
 model Action {
@@ -64,6 +78,8 @@ model Action {
   type           ActionType
   reward         Reward?      @relation(fields: [rewardId], references: [id])
   rewardId       String?
+  transaction    Transaction? @relation(fields: [transactionId], references: [id])
+  transactionId  String?
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId String
   updatedAt      DateTime     @updatedAt
@@ -77,6 +93,7 @@ model Organization {
   users        User[]
   rewards      Reward[]
   transactions Transaction[]
+  pointLogs    PointLog[]
   actions      Action[]
   updatedAt    DateTime      @updatedAt
   createdAt    DateTime      @default(now())
@@ -120,6 +137,7 @@ model User {
   points                    Int           @default(0)
   transactionsAsBeneficiary Transaction[] @relation("transactionBeneficiary")
   transactionsAsBenefactor  Transaction[] @relation("transactionBenefactor")
+  pointLogs                 PointLog[]
   organization              Organization  @relation(fields: [organizationId], references: [id])
   organizationId            String
   actions                   Action[]

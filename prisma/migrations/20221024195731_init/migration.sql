@@ -2,7 +2,7 @@
 CREATE TYPE "ActorType" AS ENUM ('USER', 'SYSTEM');
 
 -- CreateEnum
-CREATE TYPE "ActionType" AS ENUM ('TRANSACTION', 'REWARD_CREATE', 'REWARD_UPDATE', 'REWARD_DELETE');
+CREATE TYPE "ActionType" AS ENUM ('TRANSACTION', 'REWARD_CREATE', 'REWARD_UPDATE', 'REWARD_DELETE', 'REWARD_CLAIM');
 
 -- CreateTable
 CREATE TABLE "Reward" (
@@ -23,14 +23,27 @@ CREATE TABLE "Reward" (
 );
 
 -- CreateTable
-CREATE TABLE "Transaction" (
+CREATE TABLE "PointLog" (
     "id" TEXT NOT NULL,
-    "beneficiaryId" TEXT NOT NULL,
-    "benefactorId" TEXT,
+    "userId" TEXT NOT NULL,
     "previousPoints" INTEGER NOT NULL,
     "newPoints" INTEGER NOT NULL,
     "rewardId" TEXT,
     "organizationId" TEXT NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "PointLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Transaction" (
+    "id" TEXT NOT NULL,
+    "beneficiaryId" TEXT NOT NULL,
+    "benefactorId" TEXT NOT NULL,
+    "value" INTEGER NOT NULL,
+    "organizationId" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -45,6 +58,7 @@ CREATE TABLE "Action" (
     "metadata" JSONB NOT NULL,
     "type" "ActionType" NOT NULL,
     "rewardId" TEXT,
+    "transactionId" TEXT,
     "organizationId" TEXT NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -120,7 +134,7 @@ CREATE UNIQUE INDEX "Reward_issueId_key" ON "Reward"("issueId");
 CREATE UNIQUE INDEX "Reward_attachmentId_key" ON "Reward"("attachmentId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Transaction_rewardId_key" ON "Transaction"("rewardId");
+CREATE UNIQUE INDEX "PointLog_rewardId_key" ON "PointLog"("rewardId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Organization_linearId_key" ON "Organization"("linearId");
@@ -153,13 +167,19 @@ ALTER TABLE "Reward" ADD CONSTRAINT "Reward_createdById_fkey" FOREIGN KEY ("crea
 ALTER TABLE "Reward" ADD CONSTRAINT "Reward_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "PointLog" ADD CONSTRAINT "PointLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PointLog" ADD CONSTRAINT "PointLog_rewardId_fkey" FOREIGN KEY ("rewardId") REFERENCES "Reward"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PointLog" ADD CONSTRAINT "PointLog_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_beneficiaryId_fkey" FOREIGN KEY ("beneficiaryId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_benefactorId_fkey" FOREIGN KEY ("benefactorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_rewardId_fkey" FOREIGN KEY ("rewardId") REFERENCES "Reward"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_benefactorId_fkey" FOREIGN KEY ("benefactorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -169,6 +189,9 @@ ALTER TABLE "Action" ADD CONSTRAINT "Action_actorId_fkey" FOREIGN KEY ("actorId"
 
 -- AddForeignKey
 ALTER TABLE "Action" ADD CONSTRAINT "Action_rewardId_fkey" FOREIGN KEY ("rewardId") REFERENCES "Reward"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Action" ADD CONSTRAINT "Action_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "Transaction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Action" ADD CONSTRAINT "Action_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,7 +1,10 @@
 import { LinearClient } from "@linear/sdk";
+import { ActionType, ActorType } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 import nc from "next-connect";
+import { gqlClient } from "../../../services/graphql";
 import { prisma } from "../../../services/prisma";
+import { getSdk } from "../../../__generated__/graphql-operations";
 
 const handler = nc<NextApiRequest, NextApiResponse>({
   onError: (err, req, res, next) => {
@@ -52,6 +55,23 @@ const handler = nc<NextApiRequest, NextApiResponse>({
           });
 
           if (!account) {
+            if (!organization.apiKey) {
+              return res.status(400);
+            }
+
+            const gql = getSdk(gqlClient);
+
+            const linearUser = await gql.User(
+              {
+                id: payload.data.assignee.id,
+              },
+              { Authorization: organization.apiKey }
+            );
+
+            if (!linearUser.user) {
+              return res.status(400);
+            }
+
             account = await prisma.account.create({
               data: {
                 provider: "linear",
@@ -59,6 +79,8 @@ const handler = nc<NextApiRequest, NextApiResponse>({
                 type: "oauth",
                 user: {
                   create: {
+                    name: linearUser.user.name,
+                    email: linearUser.user.email,
                     organization: {
                       connect: {
                         linearId: organizationId,
@@ -93,7 +115,7 @@ const handler = nc<NextApiRequest, NextApiResponse>({
                       points: newPoints,
                     },
                   }),
-                  prisma.transaction.create({
+                  prisma.pointLog.create({
                     data: {
                       newPoints,
                       previousPoints: user.points,
@@ -102,7 +124,7 @@ const handler = nc<NextApiRequest, NextApiResponse>({
                           linearId: organizationId,
                         },
                       },
-                      beneficiary: {
+                      user: {
                         connect: {
                           id: user.id,
                         },
@@ -112,6 +134,23 @@ const handler = nc<NextApiRequest, NextApiResponse>({
                           id: reward.id,
                         },
                       },
+                    },
+                  }),
+                  prisma.action.create({
+                    data: {
+                      actorType: ActorType.SYSTEM,
+                      organization: {
+                        connect: {
+                          linearId: organizationId,
+                        },
+                      },
+                      reward: {
+                        connect: {
+                          id: reward.id,
+                        },
+                      },
+                      type: ActionType.REWARD_CLAIM,
+                      metadata: {},
                     },
                   }),
                 ]);
