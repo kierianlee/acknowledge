@@ -17,6 +17,7 @@ import {
   IconHeartHandshake,
   IconMessage,
   IconLogout,
+  IconSettings,
 } from "@tabler/icons";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
@@ -24,6 +25,7 @@ import { useAuthStore } from "../../../stores/auth";
 import { getInitials } from "../../../utils/string";
 import Image from "next/future/image";
 import { useRouter } from "next/router";
+import { useMemo } from "react";
 
 const useStyles = createStyles((theme) => ({
   navbar: {
@@ -99,17 +101,23 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
-const links = [
-  { icon: IconCheckbox, label: "Issues", path: "/issues" },
-  { icon: IconPodium, label: "Leaderboard", path: "/leaderboard" },
-  { icon: IconHeartHandshake, label: "Thanks", path: "/thanks" },
-  { icon: IconMessage, label: "Feed", path: "/feed" },
-];
-
 export function Sidebar() {
   const { classes } = useStyles();
   const auth = useAuthStore();
   const router = useRouter();
+
+  const links = useMemo(
+    () => [
+      { icon: IconCheckbox, label: "Issues", path: "/issues" },
+      { icon: IconPodium, label: "Leaderboard", path: "/leaderboard" },
+      { icon: IconHeartHandshake, label: "Thanks", path: "/thanks" },
+      { icon: IconMessage, label: "Feed", path: "/feed" },
+      ...(auth.user?.admin
+        ? [{ icon: IconSettings, label: "Settings", path: "/settings" }]
+        : []),
+    ],
+    [auth.user]
+  );
 
   const mainLinks = links.map((link) => (
     <Link passHref href={link.path} key={link.label}>

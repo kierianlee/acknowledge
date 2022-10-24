@@ -77,7 +77,7 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        if (account && !account.access_token) {
+        if (account) {
           await prisma.account.update({
             where: {
               provider_providerAccountId: {

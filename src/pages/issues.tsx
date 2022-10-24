@@ -457,6 +457,11 @@ const IssueCard = ({
                   color="red"
                   disabled={createRewardLoading || updateRewardLoading}
                   loading={deleteRewardLoading}
+                  onClick={() => {
+                    deleteRewardMutate({
+                      rewardId: acknowledgeMetadata.rewardId,
+                    });
+                  }}
                 >
                   Remove Reward
                 </Button>

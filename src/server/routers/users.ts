@@ -19,6 +19,11 @@ export const usersRouter = t.router({
           orderBy: {
             [input.orderBy.field]: input.orderBy.direction,
           },
+          where: {
+            organization: {
+              id: ctx.session.organizationId,
+            },
+          },
         });
 
         return users;
