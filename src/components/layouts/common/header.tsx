@@ -131,7 +131,7 @@ const Header = ({}: HeaderResponsiveProps) => {
                 {auth.user?.name}
               </Text>
               <Text size="xs" color="dimmed" inline>
-                {auth.user?.organization.name}
+                {auth.linearUser?.organization.name}
               </Text>
             </Stack>
           </Group>
