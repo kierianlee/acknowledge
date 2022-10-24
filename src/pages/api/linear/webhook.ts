@@ -4,6 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import nc from "next-connect";
 import { gqlClient } from "../../../services/graphql";
 import { prisma } from "../../../services/prisma";
+import { acknowledgeAttachmentTitle } from "../../../utils/linear";
 import { getSdk } from "../../../__generated__/graphql-operations";
 
 const handler = nc<NextApiRequest, NextApiResponse>({
@@ -160,7 +161,7 @@ const handler = nc<NextApiRequest, NextApiResponse>({
                 });
 
                 await linear.attachmentUpdate(reward.attachmentId, {
-                  title: "Acknowledge",
+                  title: acknowledgeAttachmentTitle,
                   subtitle: `${reward.value} points (claimed)`,
                   metadata: {
                     rewardId: reward.id,

@@ -35,3 +35,10 @@ export const convertPriorityNumberToIcon = (number: number) => {
       return IconAntennaBarsOff;
   }
 };
+
+export const acknowledgeAttachmentTitle =
+  process.env.TARGET_ENV === "production"
+    ? "Acknowledge"
+    : process.env.TARGET_ENV === "staging"
+    ? "Acknowledge Staging"
+    : "Acknowledge Dev";

@@ -5,6 +5,7 @@ import cuid from "cuid";
 import { prisma } from "../../services/prisma";
 import { LinearClient } from "@linear/sdk";
 import { ActionType, ActorType } from "@prisma/client";
+import { acknowledgeAttachmentTitle } from "../../utils/linear";
 
 export const issuesRouter = t.router({
   createReward: protectedProcedure
@@ -50,9 +51,14 @@ export const issuesRouter = t.router({
 
         const { attachment } = await linear.attachmentCreate({
           issueId: input.issueId,
-          title: "Acknowledge",
+          title: acknowledgeAttachmentTitle,
           subtitle: `${input.points} points`,
-          url: `https://acknowledge.gg/issue/${input.issueId}`,
+          url:
+            process.env.TARGET_ENV === "production"
+              ? `https://acknowledge.gg/issue/${input.issueId}`
+              : process.env.TARGET_ENV === "staging"
+              ? `https://staging.acknowledge.gg/issue/${input.issueId}`
+              : `https://localhost:3000/issue/${input.issueId}`,
           metadata: {
             rewardId,
             points: input.points,
@@ -165,7 +171,7 @@ export const issuesRouter = t.router({
         const { attachment } = await linear.attachmentUpdate(
           reward.attachmentId,
           {
-            title: "Acknowledge",
+            title: acknowledgeAttachmentTitle,
             subtitle: reward.claimed
               ? `${input.points} points (claimed)`
               : `${input.points} points`,

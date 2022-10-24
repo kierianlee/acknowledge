@@ -26,6 +26,7 @@ import { trpc } from "../utils/trpc";
 import DefaultLayout from "../components/layouts/default/default-layout";
 import { NextPageWithLayout } from "./_app";
 import {
+  acknowledgeAttachmentTitle,
   convertPriorityNumberToIcon,
   convertPriorityNumberToLabel,
 } from "../utils/linear";
@@ -81,7 +82,7 @@ const filterOptions: FilterInputOption[] = [
         value: {
           attachments: {
             or: [
-              { every: { title: { neq: "Acknowledge" } } },
+              { every: { title: { neq: acknowledgeAttachmentTitle } } },
               { length: { eq: 0 } },
             ],
           },
@@ -92,7 +93,10 @@ const filterOptions: FilterInputOption[] = [
         value: {
           attachments: {
             some: {
-              title: { startsWith: "Acknowledge", endsWith: "(claimed)" },
+              title: { eq: acknowledgeAttachmentTitle },
+              subtitle: {
+                endsWith: "(claimed)",
+              },
             },
           },
         },
@@ -102,7 +106,12 @@ const filterOptions: FilterInputOption[] = [
         value: {
           attachments: {
             some: {
-              title: { startsWith: "Acknowledge", notEndsWith: "(claimed)" },
+              title: {
+                eq: acknowledgeAttachmentTitle,
+              },
+              subtitle: {
+                notEndsWith: "(claimed)",
+              },
             },
           },
         },
