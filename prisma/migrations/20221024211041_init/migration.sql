@@ -9,6 +9,7 @@ CREATE TABLE "Reward" (
     "id" TEXT NOT NULL,
     "value" INTEGER NOT NULL,
     "issueId" TEXT NOT NULL,
+    "issueIdentifier" TEXT NOT NULL,
     "targetStateId" TEXT NOT NULL,
     "attachmentId" TEXT NOT NULL,
     "claimed" BOOLEAN NOT NULL DEFAULT false,
@@ -129,6 +130,9 @@ CREATE TABLE "VerificationToken" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Reward_issueId_key" ON "Reward"("issueId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Reward_issueIdentifier_key" ON "Reward"("issueIdentifier");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Reward_attachmentId_key" ON "Reward"("attachmentId");

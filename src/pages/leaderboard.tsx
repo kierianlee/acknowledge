@@ -52,7 +52,7 @@ const UserCard = ({ user, rank }: UserCardProps) => {
       })}
     >
       <Group p="md">
-        <Avatar color="indigo">
+        <Avatar color="indigo" radius="xl">
           {getInitials(user.name || "Organization User")}
         </Avatar>
         <Stack sx={{ flex: "1" }} spacing={0}>

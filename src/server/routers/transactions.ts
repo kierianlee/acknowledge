@@ -62,7 +62,7 @@ export const transactionsRouter = t.router({
     .input(
       z.object({
         beneficiaryId: z.string(),
-        value: z.number(),
+        value: z.number().min(1),
         message: z.string(),
       })
     )
@@ -106,6 +106,14 @@ export const transactionsRouter = t.router({
           }),
         ]);
         await prisma.$transaction([
+          prisma.pointLog.create({
+            data: {
+              user: { connect: { id: benefactor.id } },
+              organization: { connect: { id: ctx.session.organizationId } },
+              newPoints: benefactor.points - input.value,
+              previousPoints: benefactor.points,
+            },
+          }),
           prisma.pointLog.create({
             data: {
               user: { connect: { id: ctx.session.user.id } },
@@ -235,7 +243,15 @@ export const transactionsRouter = t.router({
         await prisma.$transaction([
           prisma.pointLog.create({
             data: {
-              user: { connect: { id: ctx.session.user.id } },
+              user: { connect: { id: benefactor.id } },
+              organization: { connect: { id: ctx.session.organizationId } },
+              newPoints: benefactor.points - input.value,
+              previousPoints: benefactor.points,
+            },
+          }),
+          prisma.pointLog.create({
+            data: {
+              user: { connect: { id: beneficiaryAccount.user.id } },
               organization: { connect: { id: ctx.session.organizationId } },
               newPoints: beneficiaryAccount.user.points + input.value,
               previousPoints: beneficiaryAccount.user.points,

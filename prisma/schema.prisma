@@ -8,23 +8,24 @@ datasource db {
 }
 
 model Reward {
-  id             String       @id @default(cuid())
-  value          Int
-  issueId        String       @unique
-  targetStateId  String
-  attachmentId   String       @unique
-  claimed        Boolean      @default(false)
-  claimedAt      DateTime?
-  claimedBy      User?        @relation("rewardClaimedBy", fields: [claimedById], references: [id])
-  claimedById    String?
-  pointLogs      PointLog[]
-  createdBy      User         @relation("rewardCreatedBy", fields: [createdById], references: [id])
-  createdById    String
-  actions        Action[]
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  organizationId String
-  updatedAt      DateTime     @updatedAt
-  createdAt      DateTime     @default(now())
+  id              String       @id @default(cuid())
+  value           Int
+  issueId         String       @unique
+  issueIdentifier String       @unique
+  targetStateId   String
+  attachmentId    String       @unique
+  claimed         Boolean      @default(false)
+  claimedAt       DateTime?
+  claimedBy       User?        @relation("rewardClaimedBy", fields: [claimedById], references: [id])
+  claimedById     String?
+  pointLogs       PointLog[]
+  createdBy       User         @relation("rewardCreatedBy", fields: [createdById], references: [id])
+  createdById     String
+  actions         Action[]
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  organizationId  String
+  updatedAt       DateTime     @updatedAt
+  createdAt       DateTime     @default(now())
 }
 
 model PointLog {

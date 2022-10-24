@@ -46,6 +46,8 @@ export const issuesRouter = t.router({
 
         const rewardId = cuid();
 
+        const issue = await linear.issue(input.issueId);
+
         const { attachment } = await linear.attachmentCreate({
           issueId: input.issueId,
           title: "Acknowledge",
@@ -72,6 +74,7 @@ export const issuesRouter = t.router({
           data: {
             id: rewardId,
             issueId: input.issueId,
+            issueIdentifier: `${issue.identifier}`,
             targetStateId: input.targetStateId,
             value: input.points,
             attachmentId,
@@ -286,11 +289,9 @@ export const issuesRouter = t.router({
                 id: ctx.session.organizationId,
               },
             },
-            metadata: {},
-            reward: {
-              connect: {
-                id: reward.id,
-              },
+            metadata: {
+              issueIdentifier: reward.issueIdentifier,
+              value: reward.value,
             },
           },
         });
