@@ -14,6 +14,7 @@ import { getSdk } from "../__generated__/graphql-operations";
 import { gqlClient } from "../services/graphql";
 import { themeOverride } from "../styles/theme";
 import { NotificationsProvider } from "@mantine/notifications";
+import Head from "next/head";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -30,20 +31,25 @@ function App({
   const getLayout = Component.getLayout ?? ((page) => page);
 
   return (
-    <SessionProvider session={session}>
-      <AuthWrapper>
-        <MantineProvider
-          withGlobalStyles
-          withNormalizeCSS
-          withCSSVariables
-          theme={themeOverride}
-        >
-          <NotificationsProvider>
-            {getLayout(<Component {...pageProps} />)}
-          </NotificationsProvider>
-        </MantineProvider>
-      </AuthWrapper>
-    </SessionProvider>
+    <>
+      <Head>
+        <title>Acknowledge</title>
+      </Head>
+      <SessionProvider session={session}>
+        <AuthWrapper>
+          <MantineProvider
+            withGlobalStyles
+            withNormalizeCSS
+            withCSSVariables
+            theme={themeOverride}
+          >
+            <NotificationsProvider>
+              {getLayout(<Component {...pageProps} />)}
+            </NotificationsProvider>
+          </MantineProvider>
+        </AuthWrapper>
+      </SessionProvider>
+    </>
   );
 }
 
