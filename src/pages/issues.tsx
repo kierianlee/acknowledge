@@ -250,8 +250,8 @@ const IssueCard = ({
 }: IssueCardProps) => {
   const auth = useAuthStore();
 
-  const acknowledgeMetadata = issue.attachments?.nodes.find((item) =>
-    item.title.includes("Acknowledge")
+  const acknowledgeMetadata = issue.attachments?.nodes.find(
+    (item) => item.title === acknowledgeAttachmentTitle
   )?.metadata;
   const points = acknowledgeMetadata?.points;
   const claimed = acknowledgeMetadata?.claimed;
