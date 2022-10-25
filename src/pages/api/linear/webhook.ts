@@ -106,7 +106,15 @@ const handler = nc<NextApiRequest, NextApiResponse>({
                 await prisma.$transaction([
                   prisma.reward.update({
                     where: { id: reward.id },
-                    data: { claimed: true, claimedAt: new Date() },
+                    data: {
+                      claimed: true,
+                      claimedAt: new Date(),
+                      claimedBy: {
+                        connect: {
+                          id: user.id,
+                        },
+                      },
+                    },
                   }),
                   prisma.user.update({
                     where: {

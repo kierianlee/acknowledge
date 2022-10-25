@@ -102,13 +102,13 @@ const ActionCard = ({ action, workflowStates }: ActionCardProps) => {
           action.reward?.issueIdentifier
         } on ${workflowStates?.find(
           (item) => item.node.id === action.reward?.targetStateId
-        )}.`;
+        )?.node.name}.`;
       case ActionType.REWARD_UPDATE:
         return `Updated ${action.reward?.issueIdentifier} reward to ${
           action.reward?.value
         } points on ${workflowStates?.find(
           (item) => item.node.id === action.reward?.targetStateId
-        )}.`;
+        )?.node.name}.`;
       case ActionType.REWARD_DELETE:
         return `Deleted reward on ${
           (action.metadata as JSONObject)?.issueIdentifier
