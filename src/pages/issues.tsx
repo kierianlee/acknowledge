@@ -74,7 +74,7 @@ const filterOptions: FilterInputOption[] = [
       {
         label: "Has Reward",
         value: {
-          attachments: { some: { title: { eq: "Acknowledge" } } },
+          attachments: { some: { title: { startsWith: "Acknowledge" } } },
         },
       },
       {
@@ -250,8 +250,8 @@ const IssueCard = ({
 }: IssueCardProps) => {
   const auth = useAuthStore();
 
-  const acknowledgeMetadata = issue.attachments?.nodes.find(
-    (item) => item.title === "Acknowledge"
+  const acknowledgeMetadata = issue.attachments?.nodes.find((item) =>
+    item.title.includes("Acknowledge")
   )?.metadata;
   const points = acknowledgeMetadata?.points;
   const claimed = acknowledgeMetadata?.claimed;
