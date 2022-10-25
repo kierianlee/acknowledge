@@ -19,6 +19,7 @@ export const authOptions: NextAuthOptions = {
           actor: "user",
         },
       },
+      allowDangerousEmailAccountLinking: true,
       token: "https://api.linear.app/oauth/token",
       clientId: process.env.NEXT_PUBLIC_LINEAR_CLIENT_ID,
       clientSecret: process.env.LINEAR_CLIENT_SECRET,

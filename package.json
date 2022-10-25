@@ -37,7 +37,7 @@
     "graphql-request": "^5.0.0",
     "lodash": "^4.17.21",
     "next": "12.3.1",
-    "next-auth": "^4.14.0",
+    "next-auth": "^4.15.0",
     "next-connect": "^0.13.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
