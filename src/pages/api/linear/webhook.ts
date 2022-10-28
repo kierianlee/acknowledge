@@ -96,8 +96,6 @@ const handler = nc<NextApiRequest, NextApiResponse>({
             });
           }
 
-          const { user } = account;
-
           if (organization.apiKey) {
             if (!reward.claimed) {
               if (data.stateId === reward.targetStateId) {
@@ -111,7 +109,7 @@ const handler = nc<NextApiRequest, NextApiResponse>({
                       claimedAt: new Date(),
                       claimedBy: {
                         connect: {
-                          id: user.id,
+                          id: account.id,
                         },
                       },
                     },
