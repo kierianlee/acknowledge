@@ -1,6 +1,8 @@
 import NextAuth, { NextAuthOptions, Session, User } from "next-auth";
+import { gqlClient } from "../../../services/graphql";
 import { prisma } from "../../../services/prisma";
 import { CustomPrismaAdapter } from "../../../utils/custom-prisma-adapter";
+import { getSdk } from "../../../__generated__/graphql-operations";
 
 export const authOptions: NextAuthOptions = {
   adapter: CustomPrismaAdapter(prisma),
@@ -17,6 +19,7 @@ export const authOptions: NextAuthOptions = {
           response_type: "code",
           scope: "read,write",
           actor: "user",
+          prompt: "consent",
         },
       },
       allowDangerousEmailAccountLinking: true,
@@ -25,30 +28,16 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.LINEAR_CLIENT_SECRET,
       userinfo: {
         async request({ tokens }) {
-          const endpoint = "https://api.linear.app/graphql";
-          const headers = {
-            "content-type": "application/json",
+          const gql = getSdk(gqlClient);
+
+          const payload = await gql.Me(undefined, {
             Authorization: tokens.access_token!,
-          };
-          const graphqlQuery = {
-            operationName: "Me",
-            query: `query Me { viewer { id name email admin organization { id } } }`,
-            variables: {},
-          };
-
-          const options = {
-            method: "POST",
-            headers: headers,
-            body: JSON.stringify(graphqlQuery),
-          };
-
-          const response = await fetch(endpoint, options);
-          const payload = await response.json();
+          });
 
           return {
-            sub: payload.data.viewer.id,
-            name: payload.data.viewer.name,
-            email: payload.data.viewer.email,
+            sub: payload.viewer.id,
+            name: payload.viewer.name,
+            email: payload.viewer.email,
           };
         },
       },

@@ -200,11 +200,13 @@ export function Sidebar() {
                   {getInitials(auth.linearUser?.name || "")}
                 </Avatar>
                 <Stack spacing={4}>
-                  <Text size="sm" inline>
+                  <Text size="sm" inline weight={500}>
                     {auth.linearUser?.name}
                   </Text>
+                  <Text size="xs" color="dark" inline>
+                    {auth.linearUser?.organization.name}
+                  </Text>
                   <Text size="xs" color="dimmed" inline>
-                    {/* {auth.linearUser?.organization.name} */}
                     {auth.account?.points} points
                   </Text>
                 </Stack>
