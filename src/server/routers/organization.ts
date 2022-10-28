@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { protectedProcedure, t } from "../trpc";
 import { prisma } from "../../services/prisma";
+import { getSdk } from "../../__generated__/graphql-operations";
+import { gqlClient } from "../../services/graphql";
+import { TRPCError } from "@trpc/server";
 
 export const organizationRouter = t.router({
   apiKeySet: protectedProcedure.query(async ({ ctx }) => {
@@ -24,6 +27,27 @@ export const organizationRouter = t.router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
+        // Test the API key
+        try {
+          const gql = getSdk(gqlClient);
+
+          const organization = await gql.Organization(undefined, {
+            Authorization: input.apiKey,
+          });
+
+          if (!organization) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Invalid API key",
+            });
+          }
+        } catch (err) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid API key",
+          });
+        }
+
         const organization = await prisma.organization.update({
           where: {
             id: ctx.session.account.organizationId,

@@ -29,8 +29,16 @@ export const issuesRouter = t.router({
           },
           include: {
             user: true,
+            organization: true,
           },
         });
+
+        if (!actor.organization.apiKey) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Organization API key not set",
+          });
+        }
 
         const linear = new LinearClient({
           accessToken: ctx.session.account.accessToken,
@@ -145,8 +153,16 @@ export const issuesRouter = t.router({
           },
           include: {
             user: true,
+            organization: true,
           },
         });
+
+        if (!actor.organization.apiKey) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Organization API key not set",
+          });
+        }
 
         const reward = await prisma.reward.findUniqueOrThrow({
           where: {
@@ -249,8 +265,16 @@ export const issuesRouter = t.router({
           },
           include: {
             user: true,
+            organization: true,
           },
         });
+
+        if (!actor.organization.apiKey) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Organization API key not set",
+          });
+        }
 
         const reward = await prisma.reward.findUniqueOrThrow({
           where: {

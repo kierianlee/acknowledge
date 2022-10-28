@@ -20,11 +20,8 @@ interface ConfigFormValues {
 }
 
 const Settings = () => {
-  const {
-    data: organizationApiKeySetData,
-    isLoading: organizationApiKeySetLoading,
-  } = trpc.organization.apiKeySet.useQuery(undefined, {
-    onError: showErrorNotification,
+  const configForm = useForm<ConfigFormValues>({
+    defaultValues: { apiKey: "" },
   });
 
   const { mutate: setApiKeyMutation, isLoading: setApiKeyLoading } =
@@ -36,12 +33,9 @@ const Settings = () => {
           message: "API key successfully set",
           color: "green",
         });
+        configForm.reset();
       },
     });
-
-  const configForm = useForm<ConfigFormValues>({
-    defaultValues: { apiKey: "" },
-  });
 
   const handleConfigFormSubmission = (values: ConfigFormValues) => {
     setApiKeyMutation({ apiKey: values.apiKey });
