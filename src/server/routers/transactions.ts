@@ -35,7 +35,7 @@ export const transactionsRouter = t.router({
           },
           where: {
             organization: {
-              id: ctx.session.organizationId,
+              id: ctx.session.account.organizationId,
             },
             OR: [
               { benefactor: { id: { equals: ctx.session.user.id } } },
@@ -48,8 +48,28 @@ export const transactionsRouter = t.router({
               : {}),
           },
           include: {
-            benefactor: true,
-            beneficiary: true,
+            benefactor: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    email: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+            beneficiary: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    email: true,
+                    name: true,
+                  },
+                },
+              },
+            },
           },
         });
 
@@ -68,10 +88,10 @@ export const transactionsRouter = t.router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        const benefactor = await prisma.user.findUniqueOrThrow({
-          where: { id: ctx.session.user.id },
+        const benefactor = await prisma.account.findUniqueOrThrow({
+          where: { id: ctx.session.account.id },
         });
-        const beneficiary = await prisma.user.findUniqueOrThrow({
+        const beneficiary = await prisma.account.findUniqueOrThrow({
           where: { id: input.beneficiaryId },
         });
 
@@ -83,13 +103,13 @@ export const transactionsRouter = t.router({
         }
 
         const [, , transaction] = await prisma.$transaction([
-          prisma.user.update({
+          prisma.account.update({
             where: { id: benefactor.id },
             data: {
               points: benefactor.points - input.value,
             },
           }),
-          prisma.user.update({
+          prisma.account.update({
             where: { id: beneficiary.id },
             data: {
               points: beneficiary.points + input.value,
@@ -100,7 +120,9 @@ export const transactionsRouter = t.router({
               value: input.value,
               benefactor: { connect: { id: ctx.session.user.id } },
               beneficiary: { connect: { id: beneficiary.id } },
-              organization: { connect: { id: ctx.session.organizationId } },
+              organization: {
+                connect: { id: ctx.session.account.organizationId },
+              },
               message: input.message,
             },
           }),
@@ -108,16 +130,20 @@ export const transactionsRouter = t.router({
         await prisma.$transaction([
           prisma.pointLog.create({
             data: {
-              user: { connect: { id: benefactor.id } },
-              organization: { connect: { id: ctx.session.organizationId } },
+              account: { connect: { id: benefactor.id } },
+              organization: {
+                connect: { id: ctx.session.account.organizationId },
+              },
               newPoints: benefactor.points - input.value,
               previousPoints: benefactor.points,
             },
           }),
           prisma.pointLog.create({
             data: {
-              user: { connect: { id: ctx.session.user.id } },
-              organization: { connect: { id: ctx.session.organizationId } },
+              account: { connect: { id: ctx.session.user.id } },
+              organization: {
+                connect: { id: ctx.session.account.organizationId },
+              },
               newPoints: beneficiary.points + input.value,
               previousPoints: beneficiary.points,
             },
@@ -127,7 +153,7 @@ export const transactionsRouter = t.router({
               actorType: ActorType.USER,
               organization: {
                 connect: {
-                  id: ctx.session.organizationId,
+                  id: ctx.session.account.organizationId,
                 },
               },
               transaction: {
@@ -156,7 +182,7 @@ export const transactionsRouter = t.router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        const benefactor = await prisma.user.findUniqueOrThrow({
+        const benefactor = await prisma.account.findUniqueOrThrow({
           where: { id: ctx.session.user.id },
         });
 
@@ -203,11 +229,11 @@ export const transactionsRouter = t.router({
                 create: {
                   name: linearUser.user.name,
                   email: linearUser.user.email,
-                  organization: {
-                    connect: {
-                      id: ctx.session.organizationId,
-                    },
-                  },
+                },
+              },
+              organization: {
+                connect: {
+                  id: ctx.session.account.organizationId,
                 },
               },
             },
@@ -218,16 +244,16 @@ export const transactionsRouter = t.router({
         }
 
         const [, , transaction] = await prisma.$transaction([
-          prisma.user.update({
+          prisma.account.update({
             where: { id: benefactor.id },
             data: {
               points: benefactor.points - input.value,
             },
           }),
-          prisma.user.update({
+          prisma.account.update({
             where: { id: beneficiaryAccount.user.id },
             data: {
-              points: beneficiaryAccount.user.points + input.value,
+              points: beneficiaryAccount.points + input.value,
             },
           }),
           prisma.transaction.create({
@@ -235,7 +261,9 @@ export const transactionsRouter = t.router({
               value: input.value,
               benefactor: { connect: { id: ctx.session.user.id } },
               beneficiary: { connect: { id: beneficiaryAccount.user.id } },
-              organization: { connect: { id: ctx.session.organizationId } },
+              organization: {
+                connect: { id: ctx.session.account.organizationId },
+              },
               message: input.message,
             },
           }),
@@ -243,18 +271,22 @@ export const transactionsRouter = t.router({
         await prisma.$transaction([
           prisma.pointLog.create({
             data: {
-              user: { connect: { id: benefactor.id } },
-              organization: { connect: { id: ctx.session.organizationId } },
+              account: { connect: { id: benefactor.id } },
+              organization: {
+                connect: { id: ctx.session.account.organizationId },
+              },
               newPoints: benefactor.points - input.value,
               previousPoints: benefactor.points,
             },
           }),
           prisma.pointLog.create({
             data: {
-              user: { connect: { id: beneficiaryAccount.user.id } },
-              organization: { connect: { id: ctx.session.organizationId } },
-              newPoints: beneficiaryAccount.user.points + input.value,
-              previousPoints: beneficiaryAccount.user.points,
+              account: { connect: { id: beneficiaryAccount.user.id } },
+              organization: {
+                connect: { id: ctx.session.account.organizationId },
+              },
+              newPoints: beneficiaryAccount.points + input.value,
+              previousPoints: beneficiaryAccount.points,
             },
           }),
           prisma.action.create({
@@ -262,7 +294,7 @@ export const transactionsRouter = t.router({
               actorType: ActorType.USER,
               organization: {
                 connect: {
-                  id: ctx.session.organizationId,
+                  id: ctx.session.account.organizationId,
                 },
               },
               transaction: {

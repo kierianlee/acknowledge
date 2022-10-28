@@ -18,7 +18,7 @@ export const issuesRouter = t.router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        const account = await prisma.account.findFirstOrThrow({
+        const actor = await prisma.account.findFirstOrThrow({
           where: {
             provider: {
               equals: "linear",
@@ -31,10 +31,9 @@ export const issuesRouter = t.router({
             user: true,
           },
         });
-        const { user: actor } = account;
 
         const linear = new LinearClient({
-          accessToken: ctx.session.accessToken,
+          accessToken: ctx.session.account.accessToken,
         });
         const linearUser = await linear.viewer;
 
@@ -86,7 +85,7 @@ export const issuesRouter = t.router({
             attachmentId,
             organization: {
               connect: {
-                id: ctx.session.organizationId,
+                id: ctx.session.account.organizationId,
               },
             },
             createdBy: {
@@ -108,7 +107,7 @@ export const issuesRouter = t.router({
             },
             organization: {
               connect: {
-                id: ctx.session.organizationId,
+                id: ctx.session.account.organizationId,
               },
             },
             metadata: {},
@@ -135,7 +134,7 @@ export const issuesRouter = t.router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        const account = await prisma.account.findFirstOrThrow({
+        const actor = await prisma.account.findFirstOrThrow({
           where: {
             provider: {
               equals: "linear",
@@ -148,7 +147,6 @@ export const issuesRouter = t.router({
             user: true,
           },
         });
-        const { user: actor } = account;
 
         const reward = await prisma.reward.findUniqueOrThrow({
           where: {
@@ -157,7 +155,7 @@ export const issuesRouter = t.router({
         });
 
         const linear = new LinearClient({
-          accessToken: ctx.session.accessToken,
+          accessToken: ctx.session.account.accessToken,
         });
         const linearUser = await linear.viewer;
 
@@ -215,7 +213,7 @@ export const issuesRouter = t.router({
             },
             organization: {
               connect: {
-                id: ctx.session.organizationId,
+                id: ctx.session.account.organizationId,
               },
             },
             metadata: {},
@@ -240,7 +238,7 @@ export const issuesRouter = t.router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        const account = await prisma.account.findFirstOrThrow({
+        const actor = await prisma.account.findFirstOrThrow({
           where: {
             provider: {
               equals: "linear",
@@ -253,7 +251,6 @@ export const issuesRouter = t.router({
             user: true,
           },
         });
-        const { user: actor } = account;
 
         const reward = await prisma.reward.findUniqueOrThrow({
           where: {
@@ -262,7 +259,7 @@ export const issuesRouter = t.router({
         });
 
         const linear = new LinearClient({
-          accessToken: ctx.session.accessToken,
+          accessToken: ctx.session.account.accessToken,
         });
         const linearUser = await linear.viewer;
 
@@ -292,7 +289,7 @@ export const issuesRouter = t.router({
             },
             organization: {
               connect: {
-                id: ctx.session.organizationId,
+                id: ctx.session.account.organizationId,
               },
             },
             metadata: {

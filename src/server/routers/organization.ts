@@ -7,7 +7,7 @@ export const organizationRouter = t.router({
     try {
       const organization = await prisma.organization.findUniqueOrThrow({
         where: {
-          id: ctx.session.organizationId,
+          id: ctx.session.account.organizationId,
         },
       });
 
@@ -26,7 +26,7 @@ export const organizationRouter = t.router({
       try {
         const organization = await prisma.organization.update({
           where: {
-            id: ctx.session.organizationId,
+            id: ctx.session.account.organizationId,
           },
           data: {
             apiKey: input.apiKey,
@@ -34,6 +34,43 @@ export const organizationRouter = t.router({
         });
 
         return organization;
+      } catch (err) {
+        throw err;
+      }
+    }),
+  accounts: protectedProcedure
+    .input(
+      z.object({
+        filter: z.object({}),
+        orderBy: z.object({
+          field: z.enum(["points"]),
+          direction: z.enum(["asc", "desc"]),
+        }),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      try {
+        const accounts = await prisma.account.findMany({
+          orderBy: {
+            [input.orderBy.field]: input.orderBy.direction,
+          },
+          where: {
+            organization: {
+              id: ctx.session.account.organizationId,
+            },
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        });
+
+        return accounts;
       } catch (err) {
         throw err;
       }

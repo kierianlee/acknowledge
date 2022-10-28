@@ -9,8 +9,8 @@ type Auth = MeQuery["viewer"];
 interface AuthState {
   linearUser: Auth | null;
   setLinearUser: (auth: Auth) => void;
-  user: inferProcedureOutput<AppRouter["users"]["me"]> | null;
-  setUser: (auth: inferProcedureOutput<AppRouter["users"]["me"]>) => void;
+  account: inferProcedureOutput<AppRouter["accounts"]["me"]> | null;
+  setAccount: (auth: inferProcedureOutput<AppRouter["accounts"]["me"]>) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -18,8 +18,8 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       linearUser: null,
       setLinearUser: (auth) => set((state) => ({ linearUser: auth })),
-      user: null,
-      setUser: (auth) => set((state) => ({ user: auth })),
+      account: null,
+      setAccount: (auth) => set((state) => ({ account: auth })),
     }),
     {
       name: "auth",

@@ -400,6 +400,8 @@ export type Comment = Node & {
   archivedAt?: Maybe<Scalars['DateTime']>;
   /** The comment content in markdown format. */
   body: Scalars['String'];
+  /** The comment content as a Prosemirror document. */
+  bodyData: Scalars['String'];
   /** The children of the comment. */
   children: CommentConnection;
   /** The time at which the entity was created. */
@@ -2578,6 +2580,8 @@ export type IssueLabelCollectionFilter = {
   name?: InputMaybe<StringComparator>;
   /** Compound filters, one of which need to be matched by the label. */
   or?: InputMaybe<Array<IssueLabelCollectionFilter>>;
+  /** Filters that the issue label's parent label must satisfy. */
+  parent?: InputMaybe<IssueLabelFilter>;
   /** Filters that needs to be matched by some issue labels. */
   some?: InputMaybe<IssueLabelFilter>;
   /** Filters that the issue labels team must satisfy. */
@@ -2629,6 +2633,8 @@ export type IssueLabelFilter = {
   name?: InputMaybe<StringComparator>;
   /** Compound filters, one of which need to be matched by the label. */
   or?: InputMaybe<Array<IssueLabelFilter>>;
+  /** Filters that the issue label's parent label must satisfy. */
+  parent?: InputMaybe<IssueLabelFilter>;
   /** Filters that the issue labels team must satisfy. */
   team?: InputMaybe<TeamFilter>;
   /** Comparator for the updated at date. */
@@ -6449,7 +6455,7 @@ export type Query = {
   roadmapToProject: RoadmapToProject;
   /** Custom views for the user. */
   roadmapToProjects: RoadmapToProjectConnection;
-  /** Custom views for the user. */
+  /** All roadmaps in the workspace. */
   roadmaps: RoadmapConnection;
   /** Fetch SSO login URL for the email provided. */
   ssoUrlFromEmail: SsoUrlFromEmailResponse;
@@ -9078,6 +9084,11 @@ export type IssuesQueryVariables = Exact<{
 
 export type IssuesQuery = { __typename?: 'Query', issues: { __typename?: 'IssueConnection', nodes: Array<{ __typename?: 'Issue', id: string, title: string, priority: number, attachments: { __typename?: 'AttachmentConnection', nodes: Array<{ __typename?: 'Attachment', id: string, title: string, metadata: any }> } }> } };
 
+export type OrganizationQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type OrganizationQuery = { __typename?: 'Query', organization: { __typename?: 'Organization', id: string, name: string } };
+
 export type UsersQueryVariables = Exact<{
   filter?: InputMaybe<UserFilter>;
 }>;
@@ -9138,6 +9149,14 @@ export const IssuesDocument = gql`
   }
 }
     `;
+export const OrganizationDocument = gql`
+    query Organization {
+  organization {
+    id
+    name
+  }
+}
+    `;
 export const UsersDocument = gql`
     query Users($filter: UserFilter) {
   users(filter: $filter) {
@@ -9182,6 +9201,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     Issues(variables?: IssuesQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<IssuesQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<IssuesQuery>(IssuesDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'Issues', 'query');
+    },
+    Organization(variables?: OrganizationQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<OrganizationQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<OrganizationQuery>(OrganizationDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'Organization', 'query');
     },
     Users(variables?: UsersQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<UsersQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<UsersQuery>(UsersDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'Users', 'query');

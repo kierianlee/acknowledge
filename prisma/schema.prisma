@@ -16,10 +16,10 @@ model Reward {
   attachmentId    String       @unique
   claimed         Boolean      @default(false)
   claimedAt       DateTime?
-  claimedBy       User?        @relation("rewardClaimedBy", fields: [claimedById], references: [id])
+  claimedBy       Account?     @relation("rewardClaimedBy", fields: [claimedById], references: [id])
   claimedById     String?
   pointLogs       PointLog[]
-  createdBy       User         @relation("rewardCreatedBy", fields: [createdById], references: [id])
+  createdBy       Account      @relation("rewardCreatedBy", fields: [createdById], references: [id])
   createdById     String
   actions         Action[]
   organization    Organization @relation(fields: [organizationId], references: [id])
@@ -30,8 +30,8 @@ model Reward {
 
 model PointLog {
   id             String       @id @default(cuid())
-  user           User         @relation(fields: [userId], references: [id])
-  userId         String
+  account        Account      @relation(fields: [accountId], references: [id])
+  accountId      String
   previousPoints Int
   newPoints      Int
   reward         Reward?      @relation(fields: [rewardId], references: [id])
@@ -44,9 +44,9 @@ model PointLog {
 
 model Transaction {
   id             String       @id @default(cuid())
-  beneficiary    User         @relation("transactionBeneficiary", fields: [beneficiaryId], references: [id])
+  beneficiary    Account      @relation("transactionBeneficiary", fields: [beneficiaryId], references: [id])
   beneficiaryId  String
-  benefactor     User         @relation("transactionBenefactor", fields: [benefactorId], references: [id])
+  benefactor     Account      @relation("transactionBenefactor", fields: [benefactorId], references: [id])
   benefactorId   String
   value          Int
   organization   Organization @relation(fields: [organizationId], references: [id])
@@ -72,7 +72,7 @@ enum ActionType {
 
 model Action {
   id             String       @id @default(cuid())
-  actor          User?        @relation(fields: [actorId], references: [id])
+  actor          Account?     @relation(fields: [actorId], references: [id])
   actorId        String?
   actorType      ActorType
   metadata       Json
@@ -91,7 +91,7 @@ model Organization {
   id           String        @id @default(cuid())
   linearId     String        @unique
   apiKey       String?
-  users        User[]
+  accounts     Account[]
   rewards      Reward[]
   transactions Transaction[]
   pointLogs    PointLog[]
@@ -116,7 +116,18 @@ model Account {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  points                    Int           @default(0)
+  transactionsAsBeneficiary Transaction[] @relation("transactionBeneficiary")
+  transactionsAsBenefactor  Transaction[] @relation("transactionBenefactor")
+  pointLogs                 PointLog[]
+  organization              Organization  @relation(fields: [organizationId], references: [id])
+  organizationId            String
+  actions                   Action[]
+  rewardsCreated            Reward[]      @relation("rewardCreatedBy")
+  rewardsClaimed            Reward[]      @relation("rewardClaimedBy")
+
   @@unique([provider, providerAccountId])
+  @@unique([id, organizationId])
 }
 
 model Session {
@@ -128,26 +139,15 @@ model Session {
 }
 
 model User {
-  id                        String        @id @default(cuid())
-  name                      String?
-  email                     String?       @unique
-  emailVerified             DateTime?
-  image                     String?
-  accounts                  Account[]
-  sessions                  Session[]
-  points                    Int           @default(0)
-  transactionsAsBeneficiary Transaction[] @relation("transactionBeneficiary")
-  transactionsAsBenefactor  Transaction[] @relation("transactionBenefactor")
-  pointLogs                 PointLog[]
-  organization              Organization  @relation(fields: [organizationId], references: [id])
-  organizationId            String
-  actions                   Action[]
-  rewardsCreated            Reward[]      @relation("rewardCreatedBy")
-  updatedAt                 DateTime      @updatedAt
-  createdAt                 DateTime      @default(now())
-  rewardsClaimed            Reward[]      @relation("rewardClaimedBy")
-
-  @@unique([id, organizationId])
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime  @default(now())
 }
 
 model VerificationToken {

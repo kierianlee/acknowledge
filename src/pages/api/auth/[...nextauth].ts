@@ -49,7 +49,6 @@ export const authOptions: NextAuthOptions = {
             sub: payload.data.viewer.id,
             name: payload.data.viewer.name,
             email: payload.data.viewer.email,
-            organizationId: payload.data.viewer.organization.id,
           };
         },
       },
@@ -58,7 +57,6 @@ export const authOptions: NextAuthOptions = {
           id: profile.sub,
           name: profile.name,
           email: profile.email,
-          organizationId: profile.organizationId,
         };
       },
     },
@@ -117,8 +115,12 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, user, token }) {
       const typedUser = user as User & {
-        accessToken: string;
-        organizationId: string;
+        account: {
+          id: string;
+          accessToken: string;
+          providerAccountId: string;
+          organizationId: string;
+        };
       };
 
       return {
@@ -128,13 +130,9 @@ export const authOptions: NextAuthOptions = {
           image: user.image,
           name: user.name,
         },
+        account: typedUser.account,
         token,
-        accessToken: typedUser.accessToken,
-        organizationId: typedUser.organizationId,
       } as Session;
-    },
-    async jwt({ token }) {
-      return token;
     },
   },
 };

@@ -69,14 +69,14 @@ const Acknowledge = () => {
       const data = await gql.Users(
         { filter: { isMe: { eq: false } } },
         {
-          Authorization: session?.accessToken || "",
+          Authorization: session?.account?.accessToken || "",
         }
       );
 
       return data;
     },
     {
-      enabled: !!session?.accessToken,
+      enabled: !!session?.account?.accessToken,
       retry: false,
       refetchOnWindowFocus: false,
     }
@@ -187,14 +187,14 @@ interface AcknowledgementCardProps {
 
 const AcknowledgementCard = ({ transaction }: AcknowledgementCardProps) => {
   const auth = useAuthStore();
-  const isBeneficiary = transaction.beneficiary.id === auth.user?.id;
+  const isBeneficiary = transaction.beneficiary.id === auth.account?.id;
   const theme = useMantineTheme();
 
   const title = useMemo(
     () =>
       isBeneficiary
-        ? `Received +${transaction.value} points from ${transaction.benefactor.name}`
-        : `Gave -${transaction.value} points to ${transaction.beneficiary.name}`,
+        ? `Received +${transaction.value} points from ${transaction.benefactor.user.name}`
+        : `Gave -${transaction.value} points to ${transaction.beneficiary.user.name}`,
     [transaction, isBeneficiary]
   );
 
@@ -230,16 +230,16 @@ const AcknowledgementCard = ({ transaction }: AcknowledgementCardProps) => {
             <Group mt="md">
               <Group>
                 <Avatar size="sm" radius="xl">
-                  {getInitials(transaction.benefactor.name || "")}
+                  {getInitials(transaction.benefactor.user.name || "")}
                 </Avatar>
-                <Text size="xs">{transaction.benefactor.name}</Text>
+                <Text size="xs">{transaction.benefactor.user.name}</Text>
               </Group>
               <IconHeartHandshake color={theme.colors.gray[5]} />
               <Group>
                 <Avatar size="sm" radius="xl">
-                  {getInitials(transaction.beneficiary.name || "")}
+                  {getInitials(transaction.beneficiary.user.name || "")}
                 </Avatar>
-                <Text size="xs">{transaction.beneficiary.name}</Text>
+                <Text size="xs">{transaction.beneficiary.user.name}</Text>
               </Group>
             </Group>
           </Stack>
@@ -340,7 +340,7 @@ const CreateAcknowledgementModal = ({
                   required
                   error={!!error}
                   min={1}
-                  max={auth.user?.points || 0}
+                  max={auth.account?.points || 0}
                 />
               )}
               rules={{ required: true }}

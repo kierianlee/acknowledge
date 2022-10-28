@@ -21,20 +21,54 @@ export const actionsRouter = t.router({
           },
           where: {
             organization: {
-              id: ctx.session.organizationId,
+              id: ctx.session.account.organizationId,
             },
           },
           include: {
-            actor: true,
+            actor: {
+              include: {
+                user: true,
+              },
+            },
             reward: {
               include: {
-                claimedBy: true,
+                claimedBy: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        email: true,
+                        name: true,
+                      },
+                    },
+                  },
+                },
               },
             },
             transaction: {
               include: {
-                benefactor: true,
-                beneficiary: true,
+                benefactor: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        email: true,
+                        name: true,
+                      },
+                    },
+                  },
+                },
+                beneficiary: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        email: true,
+                        name: true,
+                      },
+                    },
+                  },
+                },
               },
             },
           },

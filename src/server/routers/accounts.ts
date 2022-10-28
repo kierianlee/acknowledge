@@ -1,17 +1,16 @@
-import { z } from "zod";
 import { protectedProcedure, t } from "../trpc";
 import { prisma } from "../../services/prisma";
 
-export const usersRouter = t.router({
+export const accountsRouter = t.router({
   me: protectedProcedure.query(async ({ ctx }) => {
     try {
-      const user = await prisma.user.findUniqueOrThrow({
+      const account = await prisma.account.findUniqueOrThrow({
         where: {
-          id: ctx.session.user.id,
+          id: ctx.session.account.id,
         },
       });
 
-      return user;
+      return account;
     } catch (err) {
       throw err;
     }

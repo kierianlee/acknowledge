@@ -138,13 +138,13 @@ const Issues: NextPageWithLayout = () => {
     ["issues", issuesQueryVariables],
     async () => {
       const data = await gql.Issues(issuesQueryVariables, {
-        Authorization: session?.accessToken || "",
+        Authorization: session?.account?.accessToken || "",
       });
 
       return data;
     },
     {
-      enabled: !!session?.accessToken,
+      enabled: !!session?.account?.accessToken,
       retry: false,
       refetchOnWindowFocus: false,
     }
@@ -154,13 +154,13 @@ const Issues: NextPageWithLayout = () => {
     async () => {
       const data = await gql.WorkflowStates(
         {},
-        { Authorization: session?.accessToken || "" }
+        { Authorization: session?.account?.accessToken || "" }
       );
 
       return data;
     },
     {
-      enabled: !!session?.accessToken,
+      enabled: !!session?.account?.accessToken,
       retry: false,
       refetchOnWindowFocus: false,
     }
@@ -168,7 +168,6 @@ const Issues: NextPageWithLayout = () => {
 
   useEffect(() => {
     if (issuesIsFetched) {
-      console.log(filters);
       setIssuesQueryVariables((prev) => ({
         ...prev,
         filter: mergeWith(

@@ -82,11 +82,11 @@ const handler = nc<NextApiRequest, NextApiResponse>({
                   create: {
                     name: linearUser.user.name,
                     email: linearUser.user.email,
-                    organization: {
-                      connect: {
-                        linearId: organizationId,
-                      },
-                    },
+                  },
+                },
+                organization: {
+                  connect: {
+                    linearId: organizationId,
                   },
                 },
               },
@@ -101,7 +101,7 @@ const handler = nc<NextApiRequest, NextApiResponse>({
           if (organization.apiKey) {
             if (!reward.claimed) {
               if (data.stateId === reward.targetStateId) {
-                const newPoints = user.points + reward.value;
+                const newPoints = account.points + reward.value;
 
                 await prisma.$transaction([
                   prisma.reward.update({
@@ -116,9 +116,9 @@ const handler = nc<NextApiRequest, NextApiResponse>({
                       },
                     },
                   }),
-                  prisma.user.update({
+                  prisma.account.update({
                     where: {
-                      id: user.id,
+                      id: account.id,
                     },
                     data: {
                       points: newPoints,
@@ -127,15 +127,15 @@ const handler = nc<NextApiRequest, NextApiResponse>({
                   prisma.pointLog.create({
                     data: {
                       newPoints,
-                      previousPoints: user.points,
+                      previousPoints: account.points,
                       organization: {
                         connect: {
                           linearId: organizationId,
                         },
                       },
-                      user: {
+                      account: {
                         connect: {
-                          id: user.id,
+                          id: account.id,
                         },
                       },
                       reward: {

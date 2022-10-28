@@ -55,7 +55,7 @@ function App({
 
 const AuthWrapper = ({ children }: { children: ReactElement }) => {
   const session = useSession();
-  const { setLinearUser, setUser } = useAuthStore();
+  const { setLinearUser, setAccount } = useAuthStore();
   const gql = getSdk(gqlClient);
 
   const { data: linearMeData } = useQuery(
@@ -63,19 +63,19 @@ const AuthWrapper = ({ children }: { children: ReactElement }) => {
     async () => {
       const data = await gql.Me(
         {},
-        { Authorization: session.data?.accessToken || "" }
+        { Authorization: session.data?.account?.accessToken || "" }
       );
 
       return data;
     },
     {
-      enabled: !!session.data?.accessToken,
+      enabled: !!session.data?.account?.accessToken,
       refetchOnWindowFocus: false,
       retry: false,
     }
   );
-  const { data: meData } = trpc.users.me.useQuery(undefined, {
-    enabled: !!session.data?.accessToken,
+  const { data: meData } = trpc.accounts.me.useQuery(undefined, {
+    enabled: !!session.data?.account?.accessToken,
     refetchOnWindowFocus: false,
     retry: false,
   });
@@ -90,10 +90,10 @@ const AuthWrapper = ({ children }: { children: ReactElement }) => {
   useEffect(() => {
     if (session.status === "authenticated") {
       if (meData) {
-        setUser(meData);
+        setAccount(meData);
       }
     }
-  }, [session, meData, setUser]);
+  }, [session, meData, setAccount]);
 
   return children;
 };

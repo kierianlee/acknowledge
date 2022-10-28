@@ -124,11 +124,11 @@ const Header = ({}: HeaderResponsiveProps) => {
         <UnstyledButton onClick={() => signOut()}>
           <Group>
             <Avatar size={40} color="blue" radius="xl">
-              {getInitials(auth.user?.name || "")}
+              {getInitials(auth.linearUser?.name || "")}
             </Avatar>
             <Stack spacing={4}>
               <Text size="sm" inline>
-                {auth.user?.name}
+                {auth.linearUser?.name}
               </Text>
               <Text size="xs" color="dimmed" inline>
                 {auth.linearUser?.organization.name}

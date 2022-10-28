@@ -205,7 +205,7 @@ export function Sidebar() {
                   </Text>
                   <Text size="xs" color="dimmed" inline>
                     {/* {auth.linearUser?.organization.name} */}
-                    {auth.user?.points} points
+                    {auth.account?.points} points
                   </Text>
                 </Stack>
               </Group>

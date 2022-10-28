@@ -1,35 +1,17 @@
 import type { PrismaClient, Prisma } from "@prisma/client";
 import { Profile } from "next-auth";
 import type { Adapter, AdapterAccount } from "next-auth/adapters";
+import { gqlClient } from "../services/graphql";
+import { getSdk } from "../__generated__/graphql-operations";
 
 export function CustomPrismaAdapter(p: PrismaClient): Adapter {
   return {
     createUser: async (data) => {
-      const { organizationId, ...typedData } = data as unknown as Omit<
-        Profile,
-        "id"
-      >;
+      const { ...typedData } = data as unknown as Omit<Profile, "id">;
 
-      let organization = await p.organization.findUnique({
-        where: {
-          linearId: organizationId,
-        },
-      });
-      if (!organization) {
-        organization = await p.organization.create({
-          data: {
-            linearId: organizationId,
-          },
-        });
-      }
       const user = await p.user.create({
         data: {
           ...typedData,
-          organization: {
-            connect: {
-              id: organization.id,
-            },
-          },
         },
       });
 
@@ -102,8 +84,51 @@ export function CustomPrismaAdapter(p: PrismaClient): Adapter {
         name: user.name,
       };
     },
-    linkAccount: (data) =>
-      p.account.create({ data }) as unknown as AdapterAccount,
+    linkAccount: async (data) => {
+      const gql = getSdk(gqlClient);
+
+      const linearOrg = await gql.Organization(undefined, {
+        Authorization: data.access_token!,
+      });
+
+      let organization = await p.organization.findUnique({
+        where: {
+          linearId: linearOrg.organization.id,
+        },
+      });
+      if (!organization) {
+        organization = await p.organization.create({
+          data: {
+            linearId: linearOrg.organization.id,
+          },
+        });
+      }
+
+      const account = (await p.account.create({
+        data: {
+          provider: data.provider,
+          providerAccountId: data.providerAccountId,
+          type: data.type,
+          user: {
+            connect: { id: data.userId },
+          },
+          organization: {
+            connect: {
+              id: organization.id,
+            },
+          },
+          access_token: data.access_token,
+          expires_at: data.expires_at,
+          id_token: data.id_token,
+          scope: data.scope,
+          session_state: data.session_state,
+          token_type: data.token_type,
+          refresh_token: data.refresh_token,
+        },
+      })) as unknown as AdapterAccount;
+
+      return account;
+    },
     unlinkAccount: (provider_providerAccountId) =>
       p.account.delete({
         where: { provider_providerAccountId },
@@ -135,8 +160,12 @@ export function CustomPrismaAdapter(p: PrismaClient): Adapter {
           emailVerified: user.emailVerified,
           image: user.image,
           name: user.name,
-          accessToken: account?.access_token,
-          organizationId: user.organizationId,
+          account: {
+            id: account.id,
+            accessToken: account.access_token,
+            providerAccountId: account.providerAccountId,
+            organizationId: account.organizationId,
+          },
         },
         session,
       };

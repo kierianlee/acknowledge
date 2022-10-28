@@ -26,13 +26,13 @@ const Feed = () => {
     async () => {
       const data = await gql.WorkflowStates(
         {},
-        { Authorization: session?.accessToken || "" }
+        { Authorization: session?.account?.accessToken || "" }
       );
 
       return data;
     },
     {
-      enabled: !!session?.accessToken,
+      enabled: !!session?.account?.accessToken,
       retry: false,
       refetchOnWindowFocus: false,
     }
@@ -77,15 +77,15 @@ const ActionCard = ({ action, workflowStates }: ActionCardProps) => {
   const title = useMemo(() => {
     switch (action.type) {
       case ActionType.TRANSACTION:
-        return `${action.transaction?.beneficiary.name}`;
+        return `${action.transaction?.beneficiary.user.name}`;
       case ActionType.REWARD_CLAIM:
-        return `${action.reward?.claimedBy?.name}`;
+        return `${action.reward?.claimedBy?.user.name}`;
       case ActionType.REWARD_CREATE:
-        return `${action.actor?.name}`;
+        return `${action.actor?.user.name}`;
       case ActionType.REWARD_UPDATE:
-        return `${action.actor?.name}`;
+        return `${action.actor?.user.name}`;
       case ActionType.REWARD_DELETE:
-        return `${action.actor?.name}`;
+        return `${action.actor?.user.name}`;
       default:
         return "Error";
     }
@@ -94,21 +94,25 @@ const ActionCard = ({ action, workflowStates }: ActionCardProps) => {
   const message = useMemo(() => {
     switch (action.type) {
       case ActionType.TRANSACTION:
-        return `Received ${action.transaction?.value} points from ${action.transaction?.benefactor.name}.`;
+        return `Received ${action.transaction?.value} points from ${action.transaction?.benefactor.user.name}.`;
       case ActionType.REWARD_CLAIM:
-        return `${action.reward?.claimedBy?.name} claims ${action.reward?.value} point reward for ${action.reward?.issueIdentifier}.`;
+        return `${action.reward?.claimedBy?.user.name} claims ${action.reward?.value} point reward for ${action.reward?.issueIdentifier}.`;
       case ActionType.REWARD_CREATE:
         return `Assigned ${action.reward?.value} points to ${
           action.reward?.issueIdentifier
-        } on ${workflowStates?.find(
-          (item) => item.node.id === action.reward?.targetStateId
-        )?.node.name}.`;
+        } on ${
+          workflowStates?.find(
+            (item) => item.node.id === action.reward?.targetStateId
+          )?.node.name
+        }.`;
       case ActionType.REWARD_UPDATE:
         return `Updated ${action.reward?.issueIdentifier} reward to ${
           action.reward?.value
-        } points on ${workflowStates?.find(
-          (item) => item.node.id === action.reward?.targetStateId
-        )?.node.name}.`;
+        } points on ${
+          workflowStates?.find(
+            (item) => item.node.id === action.reward?.targetStateId
+          )?.node.name
+        }.`;
       case ActionType.REWARD_DELETE:
         return `Deleted reward on ${
           (action.metadata as JSONObject)?.issueIdentifier

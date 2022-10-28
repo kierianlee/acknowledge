@@ -10,7 +10,7 @@ import { trpc } from "../utils/trpc";
 
 const Leaderboard = () => {
   const { data: organizationUsersData, isLoading: organizationUsersLoading } =
-    trpc.users.organizationUsers.useQuery(
+    trpc.organization.accounts.useQuery(
       {
         filter: {},
         orderBy: {
@@ -29,18 +29,18 @@ const Leaderboard = () => {
         Leaderboard
       </Title>
       {organizationUsersData?.map((item, index) => (
-        <UserCard key={index} rank={index + 1} user={item} />
+        <UserCard key={index} rank={index + 1} account={item} />
       ))}
     </Box>
   );
 };
 
 interface UserCardProps {
-  user: inferProcedureOutput<AppRouter["users"]["organizationUsers"]>[0];
+  account: inferProcedureOutput<AppRouter["organization"]["accounts"]>[0];
   rank: number;
 }
 
-const UserCard = ({ user, rank }: UserCardProps) => {
+const UserCard = ({ account, rank }: UserCardProps) => {
   return (
     <Box
       sx={(theme) => ({
@@ -53,16 +53,16 @@ const UserCard = ({ user, rank }: UserCardProps) => {
     >
       <Group p="md">
         <Avatar color="indigo" radius="xl">
-          {getInitials(user.name || "Organization User")}
+          {getInitials(account.user.name || "Organization User")}
         </Avatar>
         <Stack sx={{ flex: "1" }} spacing={0}>
           <Box sx={{ flex: "1" }}>
-            <Text weight={500}>{user.name}</Text>
+            <Text weight={500}>{account.user.name}</Text>
           </Box>
           <Group spacing={4}>
             <IconMedal size="16px" />
             <Text color="dimmed" size="xs">
-              {user.points} points
+              {account.points} points
             </Text>
           </Group>
         </Stack>

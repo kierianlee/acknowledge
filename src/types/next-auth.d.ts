@@ -8,14 +8,15 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      organizationId: string;
     } & DefaultSession["user"];
+    account: {
+      id: string;
+      accessToken: string;
+      providerAccountId: string;
+      organizationId: string;
+    };
     token: JWT;
-    accessToken?: string;
-    organizationId?: string;
   }
 
-  interface Profile extends DefaultProfile {
-    organizationId: string;
-  }
+  interface Profile extends DefaultProfile {}
 }
