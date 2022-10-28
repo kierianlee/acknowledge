@@ -210,7 +210,7 @@ export const transactionsRouter = t.router({
             {
               id: input.linearUserId,
             },
-            { Authorization: ctx.session.accessToken || "" }
+            { Authorization: ctx.session.account.accessToken || "" }
           );
 
           if (!linearUser.user) {
