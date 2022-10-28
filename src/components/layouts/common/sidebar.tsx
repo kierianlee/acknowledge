@@ -219,6 +219,8 @@ export function Sidebar() {
               color="red"
               icon={<IconLogout size={14} />}
               onClick={() => {
+                auth.setAccount(null);
+                auth.setLinearUser(null);
                 signOut();
               }}
             >

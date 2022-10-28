@@ -72,12 +72,14 @@ const AuthWrapper = ({ children }: { children: ReactElement }) => {
       enabled: !!session.data?.account?.accessToken,
       refetchOnWindowFocus: false,
       retry: false,
+      cacheTime: 0,
     }
   );
   const { data: meData } = trpc.accounts.me.useQuery(undefined, {
     enabled: !!session.data?.account?.accessToken,
     refetchOnWindowFocus: false,
     retry: false,
+    cacheTime: 0,
   });
 
   useEffect(() => {

@@ -142,13 +142,21 @@ const Acknowledge = () => {
         </Button>
       </Group>
       <Group>
-        <SegmentedControl
-          data={[
-            { label: "Show All", value: ControlFilter.None },
-            { label: "Received", value: ControlFilter.Received },
-            { label: "Given", value: ControlFilter.Given },
-          ]}
-          size="xs"
+        <Controller
+          control={filterForm.control}
+          name="filter"
+          render={({ field: { value, onChange } }) => (
+            <SegmentedControl
+              onChange={onChange}
+              value={value}
+              data={[
+                { label: "Show All", value: ControlFilter.None },
+                { label: "Received", value: ControlFilter.Received },
+                { label: "Given", value: ControlFilter.Given },
+              ]}
+              size="xs"
+            />
+          )}
         />
         <Controller
           control={filterForm.control}

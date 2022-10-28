@@ -52,7 +52,7 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn(params) {
-      if (params.account) {
+      if (params.account?.access_token) {
         const account = await prisma.account.findUnique({
           where: {
             provider_providerAccountId: {
@@ -102,7 +102,7 @@ export const authOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       return baseUrl;
     },
-    async session({ session, user, token }) {
+    async session({ user }) {
       const typedUser = user as User & {
         account: {
           id: string;
@@ -120,7 +120,6 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
         },
         account: typedUser.account,
-        token,
       } as Session;
     },
   },
