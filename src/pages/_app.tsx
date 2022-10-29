@@ -15,6 +15,9 @@ import { gqlClient } from "../services/graphql";
 import { themeOverride } from "../styles/theme";
 import { NotificationsProvider } from "@mantine/notifications";
 import Head from "next/head";
+import { SpotlightProvider } from "@mantine/spotlight";
+import { spotlightActions } from "../config/spotlight";
+import { useRouter } from "next/router";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -28,6 +31,7 @@ function App({
   Component,
   pageProps: { session, ...pageProps },
 }: AppPropsWithLayout) {
+  const router = useRouter();
   const getLayout = Component.getLayout ?? ((page) => page);
 
   return (
@@ -43,9 +47,14 @@ function App({
             withCSSVariables
             theme={themeOverride}
           >
-            <NotificationsProvider>
-              {getLayout(<Component {...pageProps} />)}
-            </NotificationsProvider>
+            <SpotlightProvider
+              shortcut={["\\"]}
+              actions={spotlightActions(router)}
+            >
+              <NotificationsProvider>
+                {getLayout(<Component {...pageProps} />)}
+              </NotificationsProvider>
+            </SpotlightProvider>
           </MantineProvider>
         </AuthWrapper>
       </SessionProvider>

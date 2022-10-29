@@ -20,7 +20,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { ReactElement, useEffect, useState } from "react";
+import { ReactElement, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { trpc } from "../utils/trpc";
 import DefaultLayout from "../components/layouts/default/default-layout";
@@ -44,40 +44,137 @@ import Filter, {
 import { mergeWith } from "lodash";
 import { SelectItem } from "../components/filter/filter-input";
 
-const filterOptions: FilterInputOption[] = [
-  {
-    label: "Title",
-    accessor: "title",
-    input: InputType.TEXT,
-    queries: [QueryType.CONTAINS, QueryType.EQUALS],
-    valueTransformer: (val, query) => ({
-      title: {
-        ...(query === QueryType.CONTAINS
-          ? {
-              containsIgnoreCase: val,
-            }
-          : {}),
-        ...(query === QueryType.EQUALS
-          ? {
-              eqIgnoreCase: val,
-            }
-          : {}),
-      },
-    }),
-  },
-  {
-    label: "Reward",
-    accessor: "reward",
-    input: InputType.SELECT,
-    queries: [QueryType.EQUALS],
-    options: [
+const Issues: NextPageWithLayout = () => {
+  const { data: session } = useSession();
+  const gql = getSdk(gqlClient);
+
+  const { data: workflowStatesData } = useQuery(
+    ["workflowStates"],
+    async () => {
+      const data = await gql.WorkflowStates(
+        {},
+        { Authorization: session?.account?.accessToken || "" }
+      );
+
+      return data;
+    },
+    {
+      enabled: !!session?.account?.accessToken,
+      retry: false,
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const filterOptions: FilterInputOption[] = useMemo(
+    () => [
       {
-        label: "Has Reward",
-        value: {
-          attachments: { some: { title: { startsWith: "Acknowledge" } } },
-        },
+        label: "Title",
+        accessor: "title",
+        input: InputType.TEXT,
+        queries: [QueryType.CONTAINS, QueryType.EQUALS],
+        valueTransformer: (val, query) => ({
+          title: {
+            ...(query === QueryType.CONTAINS
+              ? {
+                  containsIgnoreCase: val,
+                }
+              : {}),
+            ...(query === QueryType.EQUALS
+              ? {
+                  eqIgnoreCase: val,
+                }
+              : {}),
+          },
+        }),
       },
       {
+        label: "Reward",
+        accessor: "reward",
+        input: InputType.SELECT,
+        queries: [QueryType.EQUALS],
+        options: [
+          {
+            label: "Has Reward",
+            value: {
+              attachments: { some: { title: { startsWith: "Acknowledge" } } },
+            },
+          },
+          {
+            label: "No Reward",
+            value: {
+              attachments: {
+                or: [
+                  { every: { title: { neq: acknowledgeAttachmentTitle } } },
+                  { length: { eq: 0 } },
+                ],
+              },
+            },
+          },
+          {
+            label: "Claimed",
+            value: {
+              attachments: {
+                some: {
+                  title: { eq: acknowledgeAttachmentTitle },
+                  subtitle: {
+                    endsWith: "(claimed)",
+                  },
+                },
+              },
+            },
+          },
+          {
+            label: "Unclaimed",
+            value: {
+              attachments: {
+                some: {
+                  title: {
+                    eq: acknowledgeAttachmentTitle,
+                  },
+                  subtitle: {
+                    notEndsWith: "(claimed)",
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+      {
+        label: "Status",
+        accessor: "status",
+        input: InputType.SELECT,
+        queries: [QueryType.EQUALS],
+        options: [
+          ...(workflowStatesData?.workflowStates.edges.map((item) => ({
+            label: item.node.name,
+            value: {
+              state: {
+                id: { eq: item.node.id },
+              },
+            },
+          })) || []),
+          ...(workflowStatesData?.workflowStates.edges.map((item) => ({
+            label: `Not ${item.node.name}`,
+            value: {
+              state: {
+                id: { neq: item.node.id },
+              },
+            },
+          })) || []),
+        ],
+      },
+    ],
+    [workflowStatesData]
+  );
+
+  const [filterMenuOpened, setFilterMenuOpened] = useState(false);
+  const [filters, setFilters] = useState<FilterValue[]>([
+    {
+      label: "Reward",
+      accessor: "reward",
+      query: QueryType.EQUALS,
+      value: {
         label: "No Reward",
         value: {
           attachments: {
@@ -88,46 +185,18 @@ const filterOptions: FilterInputOption[] = [
           },
         },
       },
-      {
-        label: "Claimed",
-        value: {
-          attachments: {
-            some: {
-              title: { eq: acknowledgeAttachmentTitle },
-              subtitle: {
-                endsWith: "(claimed)",
-              },
-            },
-          },
-        },
-      },
-      {
-        label: "Unclaimed",
-        value: {
-          attachments: {
-            some: {
-              title: {
-                eq: acknowledgeAttachmentTitle,
-              },
-              subtitle: {
-                notEndsWith: "(claimed)",
-              },
-            },
-          },
-        },
-      },
-    ],
-  },
-];
-
-const Issues: NextPageWithLayout = () => {
-  const { data: session } = useSession();
-  const gql = getSdk(gqlClient);
-  const [filterMenuOpened, setFilterMenuOpened] = useState(false);
-  const [filters, setFilters] = useState<FilterValue[]>([]);
+    },
+  ]);
   const [issuesQueryVariables, setIssuesQueryVariables] =
     useState<IssuesQueryVariables>({
-      filter: {},
+      filter: {
+        attachments: {
+          or: [
+            { every: { title: { neq: acknowledgeAttachmentTitle } } },
+            { length: { eq: 0 } },
+          ],
+        },
+      },
     });
 
   const {
@@ -140,22 +209,6 @@ const Issues: NextPageWithLayout = () => {
       const data = await gql.Issues(issuesQueryVariables, {
         Authorization: session?.account?.accessToken || "",
       });
-
-      return data;
-    },
-    {
-      enabled: !!session?.account?.accessToken,
-      retry: false,
-      refetchOnWindowFocus: false,
-    }
-  );
-  const { data: workflowStatesData } = useQuery(
-    ["workflowStates"],
-    async () => {
-      const data = await gql.WorkflowStates(
-        {},
-        { Authorization: session?.account?.accessToken || "" }
-      );
 
       return data;
     },

@@ -29,6 +29,7 @@ CREATE TABLE "PointLog" (
     "accountId" TEXT NOT NULL,
     "previousPoints" INTEGER NOT NULL,
     "newPoints" INTEGER NOT NULL,
+    "difference" INTEGER NOT NULL,
     "rewardId" TEXT,
     "organizationId" TEXT NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,

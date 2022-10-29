@@ -16,7 +16,12 @@ import {
   Avatar,
   useMantineTheme,
 } from "@mantine/core";
-import { IconArrowDown, IconArrowUp, IconHeartHandshake } from "@tabler/icons";
+import {
+  IconArrowDown,
+  IconArrowUp,
+  IconCalendar,
+  IconHeartHandshake,
+} from "@tabler/icons";
 import { ReactElement, useMemo, useState } from "react";
 import DefaultLayout from "../components/layouts/default/default-layout";
 import { DateRangePicker, DateRangePickerValue } from "@mantine/dates";
@@ -57,11 +62,12 @@ const Acknowledge = () => {
   const filterForm = useForm<FilterFormValues>({
     defaultValues: {
       filter: ControlFilter.None,
-      range: [dayjs().startOf("month").toDate(), new Date()],
+      range: [dayjs().startOf("month").toDate(), dayjs().endOf("day").toDate()],
     },
   });
 
   const filterDateRange = filterForm.watch("range");
+  const filterFilter = filterForm.watch("filter");
 
   const { data: usersData } = useQuery(
     ["users"],
@@ -90,6 +96,20 @@ const Acknowledge = () => {
             gte: filterDateRange[0]?.toISOString(),
             lte: filterDateRange[1]?.toISOString(),
           },
+          ...(filterFilter === ControlFilter.Given
+            ? {
+                benefactor: {
+                  id: session!.account.id,
+                },
+              }
+            : {}),
+          ...(filterFilter === ControlFilter.Received
+            ? {
+                beneficiary: {
+                  id: session!.account.id,
+                },
+              }
+            : {}),
         },
         orderBy: {
           direction: "desc",
@@ -98,6 +118,7 @@ const Acknowledge = () => {
       },
       {
         onError: showErrorNotification,
+        enabled: !!session?.account,
       }
     );
 
@@ -112,7 +133,7 @@ const Acknowledge = () => {
         message: "You have acknowledged your teammate!",
       });
       setCreateAcknowledgementModalOpened(false);
-      filterForm.setValue("range.1", new Date());
+      filterForm.setValue("range.1", dayjs().endOf("day").toDate());
       myTransactionsRefetch();
     },
   });
@@ -166,7 +187,8 @@ const Acknowledge = () => {
               size="xs"
               onChange={onChange}
               value={value}
-              maxDate={new Date()}
+              maxDate={dayjs().add(1, "day").endOf("day").toDate()}
+              icon={<IconCalendar size={16} />}
             />
           )}
         />

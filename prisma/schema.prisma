@@ -34,6 +34,7 @@ model PointLog {
   accountId      String
   previousPoints Int
   newPoints      Int
+  difference     Int
   reward         Reward?      @relation(fields: [rewardId], references: [id])
   rewardId       String?      @unique
   organization   Organization @relation(fields: [organizationId], references: [id])

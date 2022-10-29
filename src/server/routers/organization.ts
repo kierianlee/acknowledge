@@ -27,7 +27,7 @@ export const organizationRouter = t.router({
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        // Test the API key
+        // Test the validity of the API key
         try {
           const gql = getSdk(gqlClient);
 
@@ -67,7 +67,7 @@ export const organizationRouter = t.router({
       z.object({
         filter: z.object({}),
         orderBy: z.object({
-          field: z.enum(["points"]),
+          field: z.enum(["points", "createdAt"]),
           direction: z.enum(["asc", "desc"]),
         }),
       })

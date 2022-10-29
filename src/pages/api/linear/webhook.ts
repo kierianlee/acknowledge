@@ -126,6 +126,7 @@ const handler = nc<NextApiRequest, NextApiResponse>({
                     data: {
                       newPoints,
                       previousPoints: account.points,
+                      difference: reward.value,
                       organization: {
                         connect: {
                           linearId: organizationId,

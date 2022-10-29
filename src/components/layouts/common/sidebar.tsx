@@ -152,11 +152,6 @@ export function Sidebar() {
           <link.icon size={20} className={classes.mainLinkIcon} stroke={1.5} />
           <span>{link.label}</span>
         </div>
-        {/* {link.notifications && (
-          <Badge size="sm" variant="filled" className={classes.mainLinkBadge}>
-            {link.notifications}
-          </Badge>
-        )} */}
       </UnstyledButton>
     </Link>
   ));
@@ -181,8 +176,8 @@ export function Sidebar() {
         placeholder="Search"
         size="xs"
         icon={<IconSearch size={12} stroke={1.5} />}
-        rightSectionWidth={70}
-        rightSection={<Code className={classes.searchCode}>Ctrl + K</Code>}
+        rightSectionWidth={40}
+        rightSection={<Code className={classes.searchCode}>\</Code>}
         styles={{ rightSection: { pointerEvents: "none" } }}
         mb="sm"
       />

@@ -20,6 +20,16 @@ export const transactionsRouter = t.router({
               equals: z.string().optional(),
             })
             .optional(),
+          benefactor: z
+            .object({
+              id: z.string(),
+            })
+            .optional(),
+          beneficiary: z
+            .object({
+              id: z.string(),
+            })
+            .optional(),
         }),
         orderBy: z.object({
           field: z.enum(["createdAt"]),
@@ -38,12 +48,22 @@ export const transactionsRouter = t.router({
               id: ctx.session.account.organizationId,
             },
             OR: [
-              { benefactor: { id: { equals: ctx.session.user.id } } },
-              { beneficiary: { id: { equals: ctx.session.user.id } } },
+              { benefactor: { id: { equals: ctx.session.account.id } } },
+              { beneficiary: { id: { equals: ctx.session.account.id } } },
             ],
             ...(input.filter.createdAt
               ? {
                   createdAt: input.filter.createdAt,
+                }
+              : {}),
+            ...(input.filter.benefactor
+              ? {
+                  benefactor: input.filter.benefactor,
+                }
+              : {}),
+            ...(input.filter.beneficiary
+              ? {
+                  beneficiary: input.filter.beneficiary,
                 }
               : {}),
           },
@@ -118,7 +138,7 @@ export const transactionsRouter = t.router({
           prisma.transaction.create({
             data: {
               value: input.value,
-              benefactor: { connect: { id: ctx.session.user.id } },
+              benefactor: { connect: { id: ctx.session.account.id } },
               beneficiary: { connect: { id: beneficiary.id } },
               organization: {
                 connect: { id: ctx.session.account.organizationId },
@@ -134,16 +154,18 @@ export const transactionsRouter = t.router({
               organization: {
                 connect: { id: ctx.session.account.organizationId },
               },
+              difference: -input.value,
               newPoints: benefactor.points - input.value,
               previousPoints: benefactor.points,
             },
           }),
           prisma.pointLog.create({
             data: {
-              account: { connect: { id: ctx.session.user.id } },
+              account: { connect: { id: ctx.session.account.id } },
               organization: {
                 connect: { id: ctx.session.account.organizationId },
               },
+              difference: input.value,
               newPoints: beneficiary.points + input.value,
               previousPoints: beneficiary.points,
             },
@@ -183,7 +205,7 @@ export const transactionsRouter = t.router({
     .mutation(async ({ input, ctx }) => {
       try {
         const benefactor = await prisma.account.findUniqueOrThrow({
-          where: { id: ctx.session.user.id },
+          where: { id: ctx.session.account.id },
         });
 
         if (benefactor.points < input.value) {
@@ -251,7 +273,7 @@ export const transactionsRouter = t.router({
             },
           }),
           prisma.account.update({
-            where: { id: beneficiaryAccount.user.id },
+            where: { id: beneficiaryAccount.id },
             data: {
               points: beneficiaryAccount.points + input.value,
             },
@@ -259,8 +281,8 @@ export const transactionsRouter = t.router({
           prisma.transaction.create({
             data: {
               value: input.value,
-              benefactor: { connect: { id: ctx.session.user.id } },
-              beneficiary: { connect: { id: beneficiaryAccount.user.id } },
+              benefactor: { connect: { id: ctx.session.account.id } },
+              beneficiary: { connect: { id: beneficiaryAccount.id } },
               organization: {
                 connect: { id: ctx.session.account.organizationId },
               },
@@ -275,16 +297,18 @@ export const transactionsRouter = t.router({
               organization: {
                 connect: { id: ctx.session.account.organizationId },
               },
+              difference: -input.value,
               newPoints: benefactor.points - input.value,
               previousPoints: benefactor.points,
             },
           }),
           prisma.pointLog.create({
             data: {
-              account: { connect: { id: beneficiaryAccount.user.id } },
+              account: { connect: { id: beneficiaryAccount.id } },
               organization: {
                 connect: { id: ctx.session.account.organizationId },
               },
+              difference: input.value,
               newPoints: beneficiaryAccount.points + input.value,
               previousPoints: beneficiaryAccount.points,
             },

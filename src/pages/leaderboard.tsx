@@ -1,46 +1,78 @@
 import { Box, Stack, Title, Text, Group, Avatar, Badge } from "@mantine/core";
-import { IconMedal } from "@tabler/icons";
+import { DateRangePicker, DateRangePickerValue } from "@mantine/dates";
+import { IconCalendar, IconMedal } from "@tabler/icons";
 import { inferProcedureOutput } from "@trpc/server";
+import dayjs from "dayjs";
 import { ReactElement } from "react";
+import { Controller, useForm } from "react-hook-form";
 import DefaultLayout from "../components/layouts/default/default-layout";
 import { AppRouter } from "../server/routers/_app";
 import { showErrorNotification } from "../utils/errors";
 import { getInitials } from "../utils/string";
 import { trpc } from "../utils/trpc";
 
+interface FilterFormValues {
+  range: DateRangePickerValue;
+}
+
 const Leaderboard = () => {
-  const { data: organizationUsersData, isLoading: organizationUsersLoading } =
-    trpc.organization.accounts.useQuery(
-      {
-        filter: {},
-        orderBy: {
-          direction: "desc",
-          field: "points",
+  const filterForm = useForm<FilterFormValues>({
+    defaultValues: {
+      range: [dayjs().startOf("month").toDate(), dayjs().endOf("day").toDate()],
+    },
+  });
+
+  const filterDateRange = filterForm.watch("range");
+
+  const { data: leaderboardData } = trpc.pointLogs.leaderboard.useQuery(
+    {
+      filter: {
+        createdAt: {
+          gte: filterDateRange[0]?.toISOString(),
+          lte: filterDateRange[1]?.toISOString(),
         },
       },
-      {
-        onError: showErrorNotification,
-      }
-    );
+    },
+    {
+      onError: showErrorNotification,
+    }
+  );
 
   return (
     <Box p="lg">
       <Title order={2} weight={500} mb="xl">
         Leaderboard
       </Title>
-      {organizationUsersData?.map((item, index) => (
-        <UserCard key={index} rank={index + 1} account={item} />
-      ))}
+      <Group>
+        <Controller
+          control={filterForm.control}
+          name="range"
+          render={({ field: { onChange, value } }) => (
+            <DateRangePicker
+              size="xs"
+              onChange={onChange}
+              value={value}
+              maxDate={dayjs().add(1, "day").endOf("day").toDate()}
+              icon={<IconCalendar size={16} />}
+            />
+          )}
+        />
+      </Group>
+      <Box mt="xl">
+        {leaderboardData?.map((item, index) => (
+          <UserCard key={index} rank={index + 1} account={item} />
+        ))}
+      </Box>
     </Box>
   );
 };
 
 interface UserCardProps {
-  account: inferProcedureOutput<AppRouter["organization"]["accounts"]>[0];
+  account: inferProcedureOutput<AppRouter["pointLogs"]["leaderboard"]>[0];
   rank: number;
 }
 
-const UserCard = ({ account, rank }: UserCardProps) => {
+const UserCard = ({ account: { account, points }, rank }: UserCardProps) => {
   return (
     <Box
       sx={(theme) => ({
@@ -62,7 +94,7 @@ const UserCard = ({ account, rank }: UserCardProps) => {
           <Group spacing={4}>
             <IconMedal size="16px" />
             <Text color="dimmed" size="xs">
-              {account.points} points
+              {points} points
             </Text>
           </Group>
         </Stack>

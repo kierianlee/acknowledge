@@ -1141,72 +1141,79 @@
     graphql "^15.4.0"
     isomorphic-unfetch "^3.1.0"
 
-"@mantine/core@^5.6.2":
-  version "5.6.2"
-  resolved "https://registry.yarnpkg.com/@mantine/core/-/core-5.6.2.tgz#3e1b76fd96cbd4ba214de26a85195840d7278574"
-  integrity sha512-H42PBsiEsuA2g+c2RzEnw+rbNw+lFMqsJCgeH41DaugPGjRYgDuYkE1h6wkCbroXIcIGbcltnz1w7oTpF3eOYw==
+"@mantine/core@^5.6.3":
+  version "5.6.3"
+  resolved "https://registry.yarnpkg.com/@mantine/core/-/core-5.6.3.tgz#26128610c285cba9b23c5ccc5ed77fcf03e26774"
+  integrity sha512-joEeRblARR/faeOjOeETY4l4osYEFfgZV0+i8BO7TyalZ+ONMUurYWJp0a5iX4Gf3M6uNO9lbBLlsOy2vDnNew==
   dependencies:
     "@floating-ui/react-dom-interactions" "^0.10.1"
-    "@mantine/styles" "5.6.2"
-    "@mantine/utils" "5.6.2"
+    "@mantine/styles" "5.6.3"
+    "@mantine/utils" "5.6.3"
     "@radix-ui/react-scroll-area" "1.0.0"
     react-textarea-autosize "8.3.4"
 
-"@mantine/dates@^5.6.2":
-  version "5.6.2"
-  resolved "https://registry.yarnpkg.com/@mantine/dates/-/dates-5.6.2.tgz#ad5a90450d1a3355439688e34d2b4a57042f79b5"
-  integrity sha512-ODc5VDIF/CzOxkC5lOCKkAY+Jk6fNk1ILymDL/eZ95juHsrqviG4kvQUTUehHXI2ikA/tGIfN3AhZLU9RWHipA==
+"@mantine/dates@^5.6.3":
+  version "5.6.3"
+  resolved "https://registry.yarnpkg.com/@mantine/dates/-/dates-5.6.3.tgz#9882208fc67fef345ae5578fcbebe129f0d091a1"
+  integrity sha512-VDKbUPNVI+WB7/ejfErOGmXK486fJG7SQz+TU+YiVa6OzMfBfYyvw28rGR4Jg83EdwugZ3loKBhUVsRrAVyAoA==
   dependencies:
-    "@mantine/utils" "5.6.2"
+    "@mantine/utils" "5.6.3"
 
-"@mantine/hooks@^5.6.2":
-  version "5.6.2"
-  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-5.6.2.tgz#2651a2521732972b910b8c88ee8dd62ec32c6ecc"
-  integrity sha512-kstAXKXQc6WSbBJ+X7v/E1dtSjUnauMZ4NTS6FK3PpQBlRaRZhEVPHYeMoyfnIvcmU6IWdv3LjkRYOzcCtumOQ==
+"@mantine/hooks@^5.6.3":
+  version "5.6.3"
+  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-5.6.3.tgz#2878de1998358dbd208cb8864b765bb1ddb650d1"
+  integrity sha512-de3Fm7Z2MrWms8Ah/YbG9fr6CLLtAfz5LCwtqnRXgOetqbu38ZERYNi7TMFxnhGdZko90QjdIpiQRJBsfVax+g==
 
-"@mantine/next@^5.6.2":
-  version "5.6.2"
-  resolved "https://registry.yarnpkg.com/@mantine/next/-/next-5.6.2.tgz#e748bbe4bf562e76b98dae7b69a986a2cc24d821"
-  integrity sha512-cKrqQ5oAXebKhLkDpK95+rcuc3SZg+nV6OxG9+IvZGXT7jEK+Rr2BmGf/XJVdZ9B+YIh+jKKz4S8mIc6hCTuMg==
+"@mantine/next@^5.6.3":
+  version "5.6.3"
+  resolved "https://registry.yarnpkg.com/@mantine/next/-/next-5.6.3.tgz#b828ae9e772d4cf760fab1e3c164cb4a465c8b92"
+  integrity sha512-NWFaqFxkIx+xha/dU33WoHJ5o9A4ldEyWJuAWIPsLDJQk22eU6+tjBbq5yz/1j9v3LRMU8lqkQasuyCErFJvWg==
   dependencies:
-    "@mantine/ssr" "5.6.2"
-    "@mantine/styles" "5.6.2"
+    "@mantine/ssr" "5.6.3"
+    "@mantine/styles" "5.6.3"
 
-"@mantine/notifications@^5.6.2":
-  version "5.6.2"
-  resolved "https://registry.yarnpkg.com/@mantine/notifications/-/notifications-5.6.2.tgz#62efd1725866c0f3f0a629312976fbf9b1ee4b34"
-  integrity sha512-KkVmfMvxfEf8e5VvyWV6m6Duo8xjwFmZNW6tFd0A7R9FtZPiq2furNeUvwnmifCOQ2tV+TfJPqCX8+EZC/h/2g==
+"@mantine/notifications@^5.6.3":
+  version "5.6.3"
+  resolved "https://registry.yarnpkg.com/@mantine/notifications/-/notifications-5.6.3.tgz#add61c122c8679292a912f86b473731def8fd771"
+  integrity sha512-YL+gqKDCakQ2NCh16w8zkwxD80xUTCmpLEwYXvJoLZix0jmt62pmwG+n/kIcZL4Bn04YYmLROOXKga1aiIFF/A==
   dependencies:
-    "@mantine/utils" "5.6.2"
+    "@mantine/utils" "5.6.3"
     react-transition-group "4.4.2"
 
-"@mantine/nprogress@^5.6.2":
-  version "5.6.2"
-  resolved "https://registry.yarnpkg.com/@mantine/nprogress/-/nprogress-5.6.2.tgz#6736c781cb0944a1d5acba1ff784031b6a2e07fb"
-  integrity sha512-FiT4JG8geUl8WvLHSLG7nZ2jp1gn3dIVkTF+SxMr8GZSdyZoEY68VCx4jayO3ULfZajf0qHvkdRcVXimvAWkDQ==
+"@mantine/nprogress@^5.6.3":
+  version "5.6.3"
+  resolved "https://registry.yarnpkg.com/@mantine/nprogress/-/nprogress-5.6.3.tgz#7fb315a349c6be15aa18cca544cc1fadfe33d606"
+  integrity sha512-tssZLumRmu6ybj68K0QOjg35BcHnlkJy2Le/M1F/yI9uXsh+TGj6G2Tt3w4bU3Ge4k0b6Wv1UomutL47HHsO4Q==
   dependencies:
-    "@mantine/utils" "5.6.2"
+    "@mantine/utils" "5.6.3"
 
-"@mantine/ssr@5.6.2":
-  version "5.6.2"
-  resolved "https://registry.yarnpkg.com/@mantine/ssr/-/ssr-5.6.2.tgz#d3b8bd5e73081c91be0c019b409a0e91157c32b7"
-  integrity sha512-cZFMA4r8Wz9LyMIko2+4SeJb/ZuQ3uVEzeofwpcgIxuE9qmNIxt3CmZ7VMW+Pjk/8nCA+yQPqNHPXm39n5gHmQ==
+"@mantine/spotlight@^5.6.3":
+  version "5.6.3"
+  resolved "https://registry.yarnpkg.com/@mantine/spotlight/-/spotlight-5.6.3.tgz#79f33cd3c890a61a230271fb1d4f578a714b5920"
+  integrity sha512-FApo6qpdPWvwu2A95XS0VMlfvODCapKheTzom+WEi1vROqJoTLxOZTKfiF3XqXrZOC/Qd/bO8ubmnbzpip3Zkg==
   dependencies:
-    "@mantine/styles" "5.6.2"
+    "@mantine/utils" "5.6.3"
+
+"@mantine/ssr@5.6.3":
+  version "5.6.3"
+  resolved "https://registry.yarnpkg.com/@mantine/ssr/-/ssr-5.6.3.tgz#bb3a9ba4f2213cb401c23843e46e1bd440247c5c"
+  integrity sha512-b3iq+EhcsX+ZpVFQDFT3AlQaycjmx/Wcy8RfMLumF+3bst9bwjQ9p8Pg1g8rufdV3/5hvtnpPr0Fo7ZQrUB+Ng==
+  dependencies:
+    "@mantine/styles" "5.6.3"
     html-react-parser "1.4.12"
 
-"@mantine/styles@5.6.2":
-  version "5.6.2"
-  resolved "https://registry.yarnpkg.com/@mantine/styles/-/styles-5.6.2.tgz#01a401be81bc2d3ca05888fef8f4b36ce8e92b99"
-  integrity sha512-lMIYU+tbZS2F7LBCD2KOxGbR4Upx0Vl8gbbxDYFJIPi/M0LCQbQg5tYTIVtlO2oNAiIoTOpPVt66ITLFPdlEkg==
+"@mantine/styles@5.6.3":
+  version "5.6.3"
+  resolved "https://registry.yarnpkg.com/@mantine/styles/-/styles-5.6.3.tgz#a78b873a6063af5c1c3d2637380ecb609a9e1252"
+  integrity sha512-kgaEb1zTmZnSrcuY+ivEpBaaK9ELkWV/mBjjEVDc3fvRbcZioRFD/UUOhga4wLxU6TzLD/juAh1LPqZ3v3kwKQ==
   dependencies:
     clsx "1.1.1"
     csstype "3.0.9"
 
-"@mantine/utils@5.6.2":
-  version "5.6.2"
-  resolved "https://registry.yarnpkg.com/@mantine/utils/-/utils-5.6.2.tgz#72ffa0e6c8a0c69554aa4c43b6f52663f87d785f"
-  integrity sha512-oWBVtewwIiqqKMCw8JahrHsDb1h68Eq878RWhnH+wOC1FOz1oV0ZXz0+5/gMUFZGss0duWEZXTVXafkBnD2HZA==
+"@mantine/utils@5.6.3":
+  version "5.6.3"
+  resolved "https://registry.yarnpkg.com/@mantine/utils/-/utils-5.6.3.tgz#2634b91a5b033010e29657648dce31c9c6709567"
+  integrity sha512-GrDvXJG7inJaQHjsfg8pOYFE/vNpHMKScQM0M4hKlDoVjXsQUPxw8Lx4A7jhmVf2eNJUqvOQ9A1jbO7W7bedcA==
 
 "@next-auth/prisma-adapter@^1.0.5":
   version "1.0.5"
