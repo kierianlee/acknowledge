@@ -11,5 +11,4 @@ You can self host or use the deployment at [https://acknowledge.gg](https://ackn
 - [x] Transfer points between team mates
 - [x] Feed
 - [ ] Media queries
-- [ ] Issue page
 - [ ] Pagination
