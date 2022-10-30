@@ -13,6 +13,8 @@ interface AuthState {
   setAccount: (
     auth: inferProcedureOutput<AppRouter["accounts"]["me"]> | null
   ) => void;
+  loaded: boolean;
+  setLoaded: (loaded: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -22,6 +24,8 @@ export const useAuthStore = create<AuthState>()(
       setLinearUser: (auth) => set((state) => ({ linearUser: auth })),
       account: null,
       setAccount: (auth) => set((state) => ({ account: auth })),
+      loaded: false,
+      setLoaded: (loaded) => set((state) => ({ loaded })),
     }),
     {
       name: "auth",

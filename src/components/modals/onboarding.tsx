@@ -12,6 +12,7 @@ import {
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
 import { Controller, useForm } from "react-hook-form";
+import { useAuthStore } from "../../stores/auth";
 import { useOrganizationStore } from "../../stores/organization";
 import { showErrorNotification } from "../../utils/errors";
 import { trpc } from "../../utils/trpc";
@@ -26,6 +27,7 @@ interface OnboardingModalProps {
 
 const OnboardingModal = ({ opened }: OnboardingModalProps) => {
   const { setApiKeySet } = useOrganizationStore();
+  const { linearUser } = useAuthStore();
 
   const form = useForm<FormValues>({
     defaultValues: { apiKey: "" },
@@ -71,50 +73,62 @@ const OnboardingModal = ({ opened }: OnboardingModalProps) => {
               justifyContent: "center",
             }}
           >
-            <Box>
-              <Stack align="center" mb="xl">
+            {!linearUser?.admin ? (
+              <Box>
                 <Text weight={500} size="xl" align="center">
                   Welcome to Acknowledge! 🤝
                 </Text>
                 <Text size="sm" color="dimmed" align="center">
-                  To begin, create a personal API key on your workspace and add
-                  it below.
+                  Please log into Acknowledge as a Linear admin to setup the
+                  app.
                 </Text>
-              </Stack>
-              <Grid>
-                <Grid.Col span={12}>
-                  <Controller
-                    control={form.control}
-                    name="apiKey"
-                    render={({
-                      field: { value, onChange },
-                      fieldState: { error },
-                    }) => (
-                      <TextInput
-                        value={value}
-                        onChange={onChange}
-                        placeholder="Enter API Key..."
-                        size="xs"
-                        error={!!error}
-                        required
-                      />
-                    )}
-                    rules={{ required: true }}
-                  />
-                </Grid.Col>
-              </Grid>
-              <Divider my="xl" />
-              <Group>
-                <Button
-                  size="xs"
-                  type="submit"
-                  loading={setApiKeyLoading}
-                  fullWidth
-                >
-                  Save
-                </Button>
-              </Group>
-            </Box>
+              </Box>
+            ) : (
+              <Box>
+                <Stack align="center" mb="xl">
+                  <Text weight={500} size="xl" align="center">
+                    Welcome to Acknowledge! 🤝
+                  </Text>
+                  <Text size="sm" color="dimmed" align="center">
+                    To begin, create a personal API key on your workspace and
+                    add it below.
+                  </Text>
+                </Stack>
+                <Grid>
+                  <Grid.Col span={12}>
+                    <Controller
+                      control={form.control}
+                      name="apiKey"
+                      render={({
+                        field: { value, onChange },
+                        fieldState: { error },
+                      }) => (
+                        <TextInput
+                          value={value}
+                          onChange={onChange}
+                          placeholder="Enter API Key..."
+                          size="xs"
+                          error={!!error}
+                          required
+                        />
+                      )}
+                      rules={{ required: true }}
+                    />
+                  </Grid.Col>
+                </Grid>
+                <Divider my="xl" />
+                <Group>
+                  <Button
+                    size="xs"
+                    type="submit"
+                    loading={setApiKeyLoading}
+                    fullWidth
+                  >
+                    Save
+                  </Button>
+                </Group>
+              </Box>
+            )}
           </Box>
         </Container>
       </Box>

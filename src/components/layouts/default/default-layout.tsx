@@ -7,16 +7,22 @@ import { trpc } from "../../../utils/trpc";
 import { showErrorNotification } from "../../../utils/errors";
 import { Loader } from "@mantine/core";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 const DefaultLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
   const session = useSession();
   const { setApiKeySet, apiKeySet } = useOrganizationStore();
+  const router = useRouter();
 
   const { isLoading: organizationApiKeySetLoading } =
     trpc.organization.apiKeySet.useQuery(undefined, {
       onError: showErrorNotification,
       onSuccess: (apiKeySet) => setApiKeySet(apiKeySet),
     });
+
+  if (session.status === "unauthenticated") {
+    router.push("/");
+  }
 
   if (organizationApiKeySetLoading) {
     return (

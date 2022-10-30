@@ -21,6 +21,7 @@ import { useRouter } from "next/router";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
+  noAuth?: boolean;
 };
 
 type AppPropsWithLayout = AppProps<SessionProviderProps> & {

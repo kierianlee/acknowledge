@@ -20,6 +20,42 @@ export type Scalars = {
   UUID: any;
 };
 
+export type AdminJobConfiguration = {
+  currentJob?: InputMaybe<Scalars['String']>;
+  delay?: InputMaybe<Scalars['Float']>;
+  enabled: Scalars['Boolean'];
+  param?: InputMaybe<Scalars['String']>;
+};
+
+export type AdminJobConfigurationPayload = {
+  __typename?: 'AdminJobConfigurationPayload';
+  currentJob?: Maybe<Scalars['String']>;
+  delay: Scalars['Float'];
+  enabled: Scalars['Boolean'];
+  param?: Maybe<Scalars['String']>;
+};
+
+export type AdminJobStatusPayload = {
+  __typename?: 'AdminJobStatusPayload';
+  availableJobs: Array<Scalars['String']>;
+  configuration: AdminJobConfigurationPayload;
+  cursor?: Maybe<Scalars['String']>;
+  startedAt?: Maybe<Scalars['DateTime']>;
+};
+
+/** Different aggregation functions for analytical queries. */
+export enum Aggregation {
+  Avg = 'avg',
+  Count = 'count',
+  Max = 'max',
+  Median = 'median',
+  Min = 'min',
+  P90 = 'p90',
+  P95 = 'p95',
+  P99 = 'p99',
+  Sum = 'sum'
+}
+
 export type AirbyteConfigurationInput = {
   /** Linear export API key. */
   apiKey: Scalars['String'];
@@ -392,6 +428,12 @@ export type BooleanComparator = {
   /** Not equals constraint. */
   neq?: InputMaybe<Scalars['Boolean']>;
 };
+
+/** All possible chart types. */
+export enum ChartType {
+  NivoBar = 'nivoBar',
+  NivoScatterPlot = 'nivoScatterPlot'
+}
 
 /** A comment associated with an issue. */
 export type Comment = Node & {
@@ -874,6 +916,14 @@ export type CycleUpdateInput = {
   startsAt?: InputMaybe<Scalars['DateTime']>;
 };
 
+/** Different date aggregation functions for date dimension. */
+export enum DateAggregation {
+  Day = 'day',
+  Month = 'month',
+  Week = 'week',
+  Year = 'year'
+}
+
 /** Comparator for dates. */
 export type DateComparator = {
   /** Equals constraint. */
@@ -916,6 +966,32 @@ export type DependencyResponse = {
   /** A JSON serialized collection of dependencies. */
   dependencies: Scalars['String'];
 };
+
+/** Object describing a dimension in analytical query, value to group by. */
+export type Dimension = {
+  /** aggregation function to be applied on date dimensions */
+  dateAggregation?: InputMaybe<DateAggregation>;
+  /** name of the dimension column */
+  name: DimensionName;
+};
+
+/** All possible dimensions that can be applied to analytical queries. */
+export enum DimensionName {
+  Assignee = 'assignee',
+  CompletedAt = 'completedAt',
+  CreatedAt = 'createdAt',
+  Creator = 'creator',
+  Cycle = 'cycle',
+  DueDate = 'dueDate',
+  Estimate = 'estimate',
+  Label = 'label',
+  Priority = 'priority',
+  Project = 'project',
+  SnapshotAt = 'snapshotAt',
+  StateName = 'stateName',
+  StateType = 'stateType',
+  Team = 'team'
+}
 
 /** A document for a project. */
 export type Document = Node & {
@@ -1180,6 +1256,12 @@ export type EventPayload = {
   /** Whether the operation was successful. */
   success: Scalars['Boolean'];
 };
+
+/** Different facts tables to run analytical queries against. */
+export enum FactsTable {
+  Issue = 'issue',
+  IssueSnapshot = 'issueSnapshot'
+}
 
 /** User favorites presented in the sidebar. */
 export type Favorite = Node & {
@@ -1582,6 +1664,19 @@ export type InitiativeUpdateInput = {
   name?: InputMaybe<Scalars['String']>;
   /** The sort order of the initiative. */
   sortOrder?: InputMaybe<Scalars['Float']>;
+};
+
+export type InsightPayload = {
+  /** Chart type of the visualization. */
+  chartType: ChartType;
+  dimensions: Array<Dimension>;
+  /** Insight id where to send data to. */
+  insightId: Scalars['String'];
+  /** Filters that needs to be matched by some issues. */
+  issueFilter: IssueFilter;
+  measures: Array<Measure>;
+  /** Table to run analytical query against. */
+  table: FactsTable;
 };
 
 /** An integration with an external service. */
@@ -2917,6 +3012,22 @@ export type LogoutResponse = {
   /** Whether the operation was successful. */
   success: Scalars['Boolean'];
 };
+
+/** Object describing a measure in analytical query. */
+export type Measure = {
+  /** aggregation function to be applied on the measure column */
+  aggregation: Aggregation;
+  /** name of the measure */
+  name: MeasureName;
+};
+
+/** All possible measures that can be applied to analytical queries. */
+export enum MeasureName {
+  CycleTime = 'cycleTime',
+  Effort = 'effort',
+  Id = 'id',
+  TimeToTriage = 'timeToTriage'
+}
 
 /** A milestone that contains projects. */
 export type Milestone = Node & {
@@ -9084,6 +9195,13 @@ export type IssuesQueryVariables = Exact<{
 
 export type IssuesQuery = { __typename?: 'Query', issues: { __typename?: 'IssueConnection', nodes: Array<{ __typename?: 'Issue', id: string, title: string, priority: number, attachments: { __typename?: 'AttachmentConnection', nodes: Array<{ __typename?: 'Attachment', id: string, title: string, metadata: any }> } }> } };
 
+export type IssueQueryVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type IssueQuery = { __typename?: 'Query', issue: { __typename?: 'Issue', id: string, title: string, priority: number, attachments: { __typename?: 'AttachmentConnection', nodes: Array<{ __typename?: 'Attachment', id: string, title: string, metadata: any }> } } };
+
 export type OrganizationQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -9149,6 +9267,22 @@ export const IssuesDocument = gql`
   }
 }
     `;
+export const IssueDocument = gql`
+    query Issue($id: String!) {
+  issue(id: $id) {
+    id
+    title
+    priority
+    attachments {
+      nodes {
+        id
+        title
+        metadata
+      }
+    }
+  }
+}
+    `;
 export const OrganizationDocument = gql`
     query Organization {
   organization {
@@ -9201,6 +9335,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     Issues(variables?: IssuesQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<IssuesQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<IssuesQuery>(IssuesDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'Issues', 'query');
+    },
+    Issue(variables: IssueQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<IssueQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<IssueQuery>(IssueDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'Issue', 'query');
     },
     Organization(variables?: OrganizationQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<OrganizationQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<OrganizationQuery>(OrganizationDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'Organization', 'query');

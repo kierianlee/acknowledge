@@ -30,3 +30,18 @@ query Issues(
     }
   }
 }
+
+query Issue($id: String!) {
+  issue(id: $id) {
+    id
+    title
+    priority
+    attachments {
+      nodes {
+        id
+        title
+        metadata
+      }
+    }
+  }
+}
