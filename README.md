@@ -10,6 +10,6 @@ You can self host or use the deployment at [https://acknowledge.gg](https://ackn
 - [x] Assign, update and delete rewards on issues
 - [x] Transfer points between team mates
 - [x] Feed
-- [] Media queries
-- [] Issue page
-- [] Pagination
+- [ ] Media queries
+- [ ] Issue page
+- [ ] Pagination
