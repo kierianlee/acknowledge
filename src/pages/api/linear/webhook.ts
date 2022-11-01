@@ -49,6 +49,9 @@ const handler = nc<NextApiRequest, NextApiResponse>({
             where: {
               provider: "linear",
               providerAccountId: payload.data.assignee.id,
+              organization: {
+                linearId: organizationId,
+              },
             },
             include: {
               user: true,
@@ -73,17 +76,33 @@ const handler = nc<NextApiRequest, NextApiResponse>({
               return res.status(400);
             }
 
+            const existingUser = await prisma.user.findFirst({
+              where: {
+                email: linearUser.user.email,
+              },
+            });
+
             account = await prisma.account.create({
               data: {
                 provider: "linear",
                 providerAccountId: payload.data.assignee.id,
                 type: "oauth",
-                user: {
-                  create: {
-                    name: linearUser.user.name,
-                    email: linearUser.user.email,
-                  },
-                },
+                ...(existingUser
+                  ? {
+                      user: {
+                        connect: {
+                          id: existingUser.id,
+                        },
+                      },
+                    }
+                  : {
+                      user: {
+                        create: {
+                          name: linearUser.user.name,
+                          email: linearUser.user.email,
+                        },
+                      },
+                    }),
                 organization: {
                   connect: {
                     linearId: organizationId,
