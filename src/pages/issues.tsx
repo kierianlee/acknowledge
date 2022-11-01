@@ -268,9 +268,9 @@ const Issues: NextPageWithLayout = () => {
           />
         ))}
       </Group>
-      {issuesData?.issues.nodes.map((item, index) => (
+      {issuesData?.issues.nodes.map((item) => (
         <IssueCard
-          key={index}
+          key={item.id}
           issue={item}
           workflowStates={workflowStatesData?.workflowStates.edges}
           actionCallback={() => {
