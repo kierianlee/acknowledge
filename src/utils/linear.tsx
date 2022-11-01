@@ -37,8 +37,8 @@ export const convertPriorityNumberToIcon = (number: number) => {
 };
 
 export const acknowledgeAttachmentTitle =
-  process.env.TARGET_ENV === "production"
+  process.env.NEXT_PUBLIC_TARGET_ENV === "production"
     ? "Acknowledge"
-    : process.env.TARGET_ENV === "staging"
+    : process.env.NEXT_PUBLIC_TARGET_ENV === "staging"
     ? "Acknowledge Staging"
     : "Acknowledge Dev";

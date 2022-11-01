@@ -61,9 +61,9 @@ export const issuesRouter = t.router({
           title: acknowledgeAttachmentTitle,
           subtitle: `${input.points} points`,
           url:
-            process.env.TARGET_ENV === "production"
+            process.env.NEXT_PUBLIC_TARGET_ENV === "production"
               ? `https://acknowledge.gg/issue/${input.issueId}`
-              : process.env.TARGET_ENV === "staging"
+              : process.env.NEXT_PUBLIC_TARGET_ENV === "staging"
               ? `https://staging.acknowledge.gg/issue/${input.issueId}`
               : `http://localhost:3000/issue/${input.issueId}`,
           metadata: {
