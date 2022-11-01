@@ -465,7 +465,7 @@ const IssueCard = ({
                         styles={{ input: { maxWidth: "70px" } }}
                         size="xs"
                         error={!!error}
-                        min={1}
+                        min={0}
                         max={100}
                         disabled={claimed}
                       />
