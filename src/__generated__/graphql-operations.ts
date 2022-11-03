@@ -456,6 +456,8 @@ export type Comment = Node & {
   issue: Issue;
   /** The parent of the comment. */
   parent?: Maybe<Comment>;
+  /** Emoji reaction summary, grouped by emoji type */
+  reactionData: Scalars['JSONObject'];
   /**
    * The last time at which the entity was updated. This is the same as the creation time if the
    *     entity hasn't been updated after creation.
@@ -920,6 +922,7 @@ export type CycleUpdateInput = {
 export enum DateAggregation {
   Day = 'day',
   Month = 'month',
+  ThirtyMinutes = 'thirtyMinutes',
   Week = 'week',
   Year = 'year'
 }
@@ -5353,6 +5356,8 @@ export type Organization = Node & {
   name: Scalars['String'];
   /** Rolling 30-day total upload volume for the organization, in megabytes. */
   periodUploadVolume: Scalars['Float'];
+  /** Previously used URL keys for the organization (last 3 are kept and redirected). */
+  previousUrlKeys: Array<Scalars['String']>;
   /** The day at which to prompt for project updates. */
   projectUpdateRemindersDay: Day;
   /** The hour at which to prompt for project updates. */
@@ -9182,6 +9187,8 @@ export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type MeQuery = { __typename?: 'Query', viewer: { __typename?: 'User', id: string, name: string, email: string, admin: boolean, organization: { __typename?: 'Organization', id: string, name: string } } };
 
+export type IssueFragmentFragment = { __typename?: 'Issue', id: string, title: string, priority: number, attachments: { __typename?: 'AttachmentConnection', nodes: Array<{ __typename?: 'Attachment', id: string, title: string, metadata: any }> }, team: { __typename?: 'Team', id: string, name: string } };
+
 export type IssuesQueryVariables = Exact<{
   filter?: InputMaybe<IssueFilter>;
   before?: InputMaybe<Scalars['String']>;
@@ -9193,14 +9200,14 @@ export type IssuesQueryVariables = Exact<{
 }>;
 
 
-export type IssuesQuery = { __typename?: 'Query', issues: { __typename?: 'IssueConnection', nodes: Array<{ __typename?: 'Issue', id: string, title: string, priority: number, attachments: { __typename?: 'AttachmentConnection', nodes: Array<{ __typename?: 'Attachment', id: string, title: string, metadata: any }> } }> } };
+export type IssuesQuery = { __typename?: 'Query', issues: { __typename?: 'IssueConnection', nodes: Array<{ __typename?: 'Issue', id: string, title: string, priority: number, attachments: { __typename?: 'AttachmentConnection', nodes: Array<{ __typename?: 'Attachment', id: string, title: string, metadata: any }> }, team: { __typename?: 'Team', id: string, name: string } }> } };
 
 export type IssueQueryVariables = Exact<{
   id: Scalars['String'];
 }>;
 
 
-export type IssueQuery = { __typename?: 'Query', issue: { __typename?: 'Issue', id: string, title: string, priority: number, attachments: { __typename?: 'AttachmentConnection', nodes: Array<{ __typename?: 'Attachment', id: string, title: string, metadata: any }> } } };
+export type IssueQuery = { __typename?: 'Query', issue: { __typename?: 'Issue', id: string, title: string, priority: number, attachments: { __typename?: 'AttachmentConnection', nodes: Array<{ __typename?: 'Attachment', id: string, title: string, metadata: any }> }, team: { __typename?: 'Team', id: string, name: string } } };
 
 export type OrganizationQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -9224,9 +9231,26 @@ export type UserQuery = { __typename?: 'Query', user: { __typename?: 'User', id:
 export type WorkflowStatesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type WorkflowStatesQuery = { __typename?: 'Query', workflowStates: { __typename?: 'WorkflowStateConnection', edges: Array<{ __typename?: 'WorkflowStateEdge', node: { __typename?: 'WorkflowState', id: string, name: string } }> } };
+export type WorkflowStatesQuery = { __typename?: 'Query', workflowStates: { __typename?: 'WorkflowStateConnection', edges: Array<{ __typename?: 'WorkflowStateEdge', node: { __typename?: 'WorkflowState', id: string, name: string, team: { __typename?: 'Team', id: string, name: string } } }> } };
 
-
+export const IssueFragmentFragmentDoc = gql`
+    fragment IssueFragment on Issue {
+  id
+  title
+  priority
+  attachments {
+    nodes {
+      id
+      title
+      metadata
+    }
+  }
+  team {
+    id
+    name
+  }
+}
+    `;
 export const MeDocument = gql`
     query Me {
   viewer {
@@ -9253,36 +9277,18 @@ export const IssuesDocument = gql`
     orderBy: $orderBy
   ) {
     nodes {
-      id
-      title
-      priority
-      attachments {
-        nodes {
-          id
-          title
-          metadata
-        }
-      }
+      ...IssueFragment
     }
   }
 }
-    `;
+    ${IssueFragmentFragmentDoc}`;
 export const IssueDocument = gql`
     query Issue($id: String!) {
   issue(id: $id) {
-    id
-    title
-    priority
-    attachments {
-      nodes {
-        id
-        title
-        metadata
-      }
-    }
+    ...IssueFragment
   }
 }
-    `;
+    ${IssueFragmentFragmentDoc}`;
 export const OrganizationDocument = gql`
     query Organization {
   organization {
@@ -9317,6 +9323,10 @@ export const WorkflowStatesDocument = gql`
       node {
         id
         name
+        team {
+          id
+          name
+        }
       }
     }
   }

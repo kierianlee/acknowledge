@@ -1,3 +1,20 @@
+fragment IssueFragment on Issue {
+  id
+  title
+  priority
+  attachments {
+    nodes {
+      id
+      title
+      metadata
+    }
+  }
+  team {
+    id
+    name
+  }
+}
+
 query Issues(
   $filter: IssueFilter
   $before: String
@@ -17,31 +34,13 @@ query Issues(
     orderBy: $orderBy
   ) {
     nodes {
-      id
-      title
-      priority
-      attachments {
-        nodes {
-          id
-          title
-          metadata
-        }
-      }
+      ...IssueFragment
     }
   }
 }
 
 query Issue($id: String!) {
   issue(id: $id) {
-    id
-    title
-    priority
-    attachments {
-      nodes {
-        id
-        title
-        metadata
-      }
-    }
+    ...IssueFragment
   }
 }

@@ -4,6 +4,10 @@ query WorkflowStates {
       node {
         id
         name
+        team {
+          id
+          name
+        }
       }
     }
   }

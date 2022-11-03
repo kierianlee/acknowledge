@@ -147,7 +147,7 @@ const Issues: NextPageWithLayout = () => {
         queries: [QueryType.EQUALS],
         options: [
           ...(workflowStatesData?.workflowStates.edges.map((item) => ({
-            label: item.node.name,
+            label: `${item.node.name} (${item.node.team.name})`,
             value: {
               state: {
                 id: { eq: item.node.id },
@@ -155,7 +155,7 @@ const Issues: NextPageWithLayout = () => {
             },
           })) || []),
           ...(workflowStatesData?.workflowStates.edges.map((item) => ({
-            label: `Not ${item.node.name}`,
+            label: `Not ${item.node.name} (${item.node.team.name})`,
             value: {
               state: {
                 id: { neq: item.node.id },
@@ -488,10 +488,14 @@ const IssueCard = ({
                       onChange={onChange}
                       placeholder="Select target"
                       data={
-                        workflowStates?.map((item) => ({
-                          label: item.node.name,
-                          value: item.node.id,
-                        })) || []
+                        workflowStates
+                          ?.filter(
+                            (item) => item.node.team.id === issue.team.id
+                          )
+                          .map((item) => ({
+                            label: item.node.name,
+                            value: item.node.id,
+                          })) || []
                       }
                       size="xs"
                       required
