@@ -310,7 +310,7 @@ const IssueCard = ({
 
   const form = useForm<IssueCardFormValues>({
     defaultValues: {
-      points: points || undefined,
+      points: points !== undefined && points !== null ? points : undefined,
       targetStateId: acknowledgeMetadata?.targetStateId || undefined,
     },
   });
@@ -369,17 +369,17 @@ const IssueCard = ({
   const PriorityIcon = convertPriorityNumberToIcon(issue?.priority || 0);
 
   const handleSubmission = (values: IssueCardFormValues) => {
-    if (points) {
-      updateRewardMutate({
-        points: values.points,
-        targetStateId: values.targetStateId,
-        rewardId: acknowledgeMetadata.rewardId,
-      });
-    } else {
+    if (!points && points !== 0) {
       createRewardMutate({
         issueId: issue.id,
         points: values.points,
         targetStateId: values.targetStateId,
+      });
+    } else {
+      updateRewardMutate({
+        points: values.points,
+        targetStateId: values.targetStateId,
+        rewardId: acknowledgeMetadata.rewardId,
       });
     }
   };
@@ -418,7 +418,7 @@ const IssueCard = ({
               </Text>
             </Group>
           </Badge>
-          {!!points && (
+          {points !== undefined && points !== null && (
             <Badge px={4} py="md" radius="md" color="gray">
               <Group align="center" spacing={4}>
                 <IconTrophy size="16px" />
@@ -512,7 +512,7 @@ const IssueCard = ({
               >
                 Cancel
               </Button>
-              {!!points && !claimed && (
+              {points !== undefined && points !== null && !claimed && (
                 <Button
                   size="xs"
                   color="red"
