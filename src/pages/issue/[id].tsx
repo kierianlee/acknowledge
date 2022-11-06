@@ -81,9 +81,6 @@ const IssuePage = ({ id }: IssuePageProps) => {
         <IssueCard
           issue={issue}
           workflowStates={workflowStatesData?.workflowStates.edges}
-          actionCallback={() => {
-            issueRefetch();
-          }}
         />
       )}
     </Box>

@@ -30,8 +30,8 @@ const Feed = () => {
       refetchOnWindowFocus: false,
     }
   );
-  const { data, hasNextPage, fetchNextPage, isLoading, error } =
-    trpc.actions.organizationActions.useInfiniteQuery(
+  const { data, hasNextPage, fetchNextPage, isLoading, isError } =
+    trpc.actions.feed.useInfiniteQuery(
       {
         filter: {},
         limit: 10,
@@ -46,11 +46,9 @@ const Feed = () => {
     loading: isLoading,
     hasNextPage: hasNextPage ?? false,
     onLoadMore: fetchNextPage,
-    disabled: !!error,
+    disabled: isError,
     rootMargin: "0px 0px 400px 0px",
   });
-
-  console.log(data);
 
   return (
     <Box p="lg">

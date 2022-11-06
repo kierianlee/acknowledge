@@ -1,71 +1,70 @@
 import { protectedProcedure, t } from "../trpc";
 import { prisma } from "../../services/prisma";
 import { z } from "zod";
-import { Account, User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { offsetPaginationInput } from "../pagination";
 
 export const pointLogsRouter = t.router({
   leaderboard: protectedProcedure
     .input(
       z.object({
         filter: z.object({
-          createdAt: z
-            .object({
-              gt: z.string().optional(),
-              gte: z.string().optional(),
-              lt: z.string().optional(),
-              lte: z.string().optional(),
-            })
-            .optional(),
+          createdAt: z.object({
+            gte: z.string(),
+            lt: z.string(),
+          }),
         }),
+        ...offsetPaginationInput,
       })
     )
     .query(async ({ ctx, input }) => {
       try {
-        const pointLogs = await prisma.pointLog.findMany({
-          where: {
-            ...(input.filter?.createdAt
-              ? {
-                  createdAt: input.filter.createdAt,
-                }
-              : {}),
-            organization: {
-              id: {
-                equals: ctx.session.account.organizationId,
-              },
-            },
-          },
-          include: {
-            account: {
-              include: {
-                user: true,
-              },
-            },
-          },
-        });
+        const results = await prisma.$queryRaw<
+          {
+            rank: number;
+            points: number;
+            totalPoints: number;
+            accountId: string;
+            name: string;
+            email: string;
+          }[]
+        >(Prisma.sql`
+          SELECT
+            RANK() OVER (ORDER BY points DESC)::int AS rank,
+            SUM(p.difference)::int AS points,
+            a.points AS "totalPoints",
+            p. "accountId",
+            u.name,
+            u.email
+          FROM
+            "PointLog" p
+            INNER JOIN "Account" a ON p. "accountId" = a.id
+            INNER JOIN "User" u ON a. "userId" = u.id
+          WHERE
+            p. "createdAt" >= ${input.filter.createdAt.gte}::timestamp
+            AND p. "createdAt" < ${input.filter.createdAt.lt}::timestamp
+            AND p. "organizationId" = ${ctx.session.account.organizationId}
+          GROUP BY
+            p. "accountId",
+            u.id,
+            a.points
+          ORDER BY
+            points DESC
+          LIMIT ${input.limit ?? 50} OFFSET ${input.skip ?? 0}; `);
 
-        let accounts: {
-          account: Account & {
-            user: User;
-          };
-          points: number;
-        }[] = [];
+        const totalCount = await prisma.$queryRaw<
+          { count: number }[]
+        >(Prisma.sql`
+          SELECT
+            COUNT(DISTINCT p. "accountId")::int
+          FROM
+            "PointLog" p
+          WHERE
+            p. "createdAt" >= '2022-11-01'::timestamp
+            AND p. "createdAt" < '2022-11-30'::timestamp
+            AND p. "organizationId" = 'cl9t62q7e0002xwac9mkhe1ch';`);
 
-        for (const log of pointLogs) {
-          const accountIndex = accounts.findIndex(
-            (item) => item.account.id === log.accountId
-          );
-
-          if (accountIndex !== -1) {
-            accounts[accountIndex].points =
-              accounts[accountIndex].points + log.difference;
-          } else {
-            accounts.push({ account: log.account, points: log.difference });
-          }
-        }
-
-        accounts = accounts.sort((a, b) => b.points - a.points);
-
-        return accounts;
+        return { items: results, totalCount: totalCount[0].count };
       } catch (err) {
         throw err;
       }

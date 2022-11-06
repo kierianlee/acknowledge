@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { gqlClient } from "../services/graphql";
 import {
@@ -177,11 +177,7 @@ const Issues: NextPageWithLayout = () => {
       },
     });
 
-  const {
-    data: issuesData,
-    refetch: refetchIssues,
-    isFetched: issuesIsFetched,
-  } = useQuery(
+  const { data: issuesData, isFetched: issuesIsFetched } = useQuery(
     ["issues", issuesQueryVariables],
     async () => {
       const data = await gql.Issues(issuesQueryVariables, {
@@ -209,7 +205,7 @@ const Issues: NextPageWithLayout = () => {
         ),
       }));
     }
-  }, [filters, refetchIssues, issuesIsFetched]);
+  }, [filters, issuesIsFetched]);
 
   return (
     <Box p="lg">
@@ -251,9 +247,6 @@ const Issues: NextPageWithLayout = () => {
           key={item.id}
           issue={item}
           workflowStates={workflowStatesData?.workflowStates.edges}
-          actionCallback={() => {
-            refetchIssues();
-          }}
         />
       ))}
     </Box>

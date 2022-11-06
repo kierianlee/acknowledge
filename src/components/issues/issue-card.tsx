@@ -26,6 +26,7 @@ import { IconMedal, IconPencil, IconTrophy } from "@tabler/icons";
 import { useAuthStore } from "../../stores/auth";
 import { showErrorNotification } from "../../utils/errors";
 import { showNotification } from "@mantine/notifications";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface IssueCardProps {
   issue: IssuesQuery["issues"]["nodes"][0];
@@ -46,6 +47,7 @@ const IssueCard = ({
   actionCallback,
 }: IssueCardProps) => {
   const auth = useAuthStore();
+  const queryClient = useQueryClient();
 
   const acknowledgeMetadata = issue.attachments?.nodes.find(
     (item) => item.title === acknowledgeAttachmentTitle
@@ -77,6 +79,9 @@ const IssueCard = ({
         });
       },
       onError: showErrorNotification,
+      onSettled: () => {
+        queryClient.invalidateQueries(["issues"]);
+      },
     });
   const { mutate: updateRewardMutate, isLoading: updateRewardLoading } =
     trpc.issues.updateReward.useMutation({
@@ -93,6 +98,9 @@ const IssueCard = ({
         });
       },
       onError: showErrorNotification,
+      onSettled: () => {
+        queryClient.invalidateQueries(["issues"]);
+      },
     });
   const { mutate: deleteRewardMutate, isLoading: deleteRewardLoading } =
     trpc.issues.deleteReward.useMutation({
@@ -109,6 +117,9 @@ const IssueCard = ({
         });
       },
       onError: showErrorNotification,
+      onSettled: () => {
+        queryClient.invalidateQueries(["issues"]);
+      },
     });
 
   const PriorityIcon = convertPriorityNumberToIcon(issue?.priority || 0);

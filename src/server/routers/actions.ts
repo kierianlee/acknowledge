@@ -1,18 +1,17 @@
 import { z } from "zod";
 import { protectedProcedure, t } from "../trpc";
 import { prisma } from "../../services/prisma";
-import { paginationInput } from "../pagination";
+import { cursorPaginationInput } from "../pagination";
 
 export const actionsRouter = t.router({
-  organizationActions: protectedProcedure
+  feed: protectedProcedure
     .input(
       z.object({
         filter: z.object({}),
-        ...paginationInput,
+        ...cursorPaginationInput,
       })
     )
     .query(async ({ input, ctx }) => {
-      console.log("triggered");
       try {
         const limit = input.limit ?? 50;
         const { cursor } = input;

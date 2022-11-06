@@ -10,7 +10,7 @@ import { WorkflowStatesQuery } from "../../__generated__/graphql-operations";
 
 interface ActionCardProps {
   action: inferProcedureOutput<
-    AppRouter["actions"]["organizationActions"]
+    AppRouter["actions"]["feed"]
   >["items"][0];
   workflowStates?: WorkflowStatesQuery["workflowStates"]["edges"];
 }

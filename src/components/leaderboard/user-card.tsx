@@ -1,15 +1,18 @@
 import { Box, Stack, Text, Group, Avatar, Badge } from "@mantine/core";
 import { IconMedal } from "@tabler/icons";
 import { inferProcedureOutput } from "@trpc/server";
+import { forwardRef } from "react";
 import { AppRouter } from "../../server/routers/_app";
 import { getInitials } from "../../utils/string";
 
 interface UserCardProps {
   account: inferProcedureOutput<AppRouter["pointLogs"]["leaderboard"]>[0];
-  rank: number;
 }
 
-const UserCard = ({ account: { account, points }, rank }: UserCardProps) => {
+const UserCard = forwardRef<HTMLDivElement, UserCardProps>(function UserCard(
+  { account: { name, points, rank, totalPoints } },
+  ref
+) {
   return (
     <Box
       sx={(theme) => ({
@@ -22,16 +25,16 @@ const UserCard = ({ account: { account, points }, rank }: UserCardProps) => {
     >
       <Group p="md">
         <Avatar color="indigo" radius="xl">
-          {getInitials(account.user.name || "Organization User")}
+          {getInitials(name || "Organization User")}
         </Avatar>
         <Stack sx={{ flex: "1" }} spacing={0}>
           <Box sx={{ flex: "1" }}>
-            <Text weight={500}>{account.user.name}</Text>
+            <Text weight={500}>{name}</Text>
           </Box>
           <Group spacing={4}>
             <IconMedal size="16px" />
             <Text color="dimmed" size="xs">
-              {points} points
+              {points} points ({totalPoints} all time)
             </Text>
           </Group>
         </Stack>
@@ -55,6 +58,6 @@ const UserCard = ({ account: { account, points }, rank }: UserCardProps) => {
       </Group>
     </Box>
   );
-};
+});
 
 export default UserCard;

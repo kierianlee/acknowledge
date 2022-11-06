@@ -16,6 +16,7 @@ import AcknowledgementCard from "../components/acknowledge/acknowledgement-card"
 import CreateAcknowledgementModal, {
   CreateAcknowledgementModalFormValues,
 } from "../components/acknowledge/create-acknowledgement-modal";
+import useInfiniteScroll from "react-infinite-scroll-hook";
 
 enum ControlFilter {
   None = "none",
@@ -31,6 +32,7 @@ interface FilterFormValues {
 const Acknowledge = () => {
   const { data: session } = useSession();
   const gql = getSdk(gqlClient);
+  const utils = trpc.useContext();
 
   const [
     createAcknowledgementModalOpened,
@@ -66,45 +68,58 @@ const Acknowledge = () => {
     }
   );
 
-  const { data: myTransactionsData, refetch: myTransactionsRefetch } =
-    trpc.transactions.myTransactions.useQuery(
-      {
-        filter: {
-          createdAt: {
-            gte: filterDateRange[0]?.toISOString(),
-            lte: filterDateRange[1]?.toISOString(),
-          },
-          ...(filterFilter === ControlFilter.Given
-            ? {
-                benefactor: {
-                  id: session!.account.id,
-                },
-              }
-            : {}),
-          ...(filterFilter === ControlFilter.Received
-            ? {
-                beneficiary: {
-                  id: session!.account.id,
-                },
-              }
-            : {}),
+  const {
+    data: myTransactionsData,
+    isError: myTransactionsIsError,
+    isLoading: myTransactionsIsLoading,
+    hasNextPage: myTransactionsHasNextPage,
+    fetchNextPage: myTransactionsFetchNextPage,
+  } = trpc.transactions.myTransactions.useInfiniteQuery(
+    {
+      filter: {
+        createdAt: {
+          gte: filterDateRange[0]?.toISOString(),
+          lt: filterDateRange[1]?.toISOString(),
         },
-        orderBy: {
-          direction: "desc",
-          field: "createdAt",
-        },
+        ...(filterFilter === ControlFilter.Given
+          ? {
+              benefactor: {
+                id: session!.account.id,
+              },
+            }
+          : {}),
+        ...(filterFilter === ControlFilter.Received
+          ? {
+              beneficiary: {
+                id: session!.account.id,
+              },
+            }
+          : {}),
       },
-      {
-        onError: showErrorNotification,
-        enabled: !!session?.account,
-      }
-    );
+      limit: 10,
+    },
+    {
+      onError: showErrorNotification,
+      enabled: !!session?.account,
+    }
+  );
+
+  const [sentryRef] = useInfiniteScroll({
+    loading: myTransactionsIsLoading,
+    hasNextPage: myTransactionsHasNextPage ?? false,
+    onLoadMore: myTransactionsFetchNextPage,
+    disabled: myTransactionsIsError,
+    rootMargin: "0px 0px 400px 0px",
+  });
 
   const {
     mutate: createTransactionMutation,
     isLoading: createTransactionLoading,
   } = trpc.transactions.createTransactionByLinearUserId.useMutation({
     onError: showErrorNotification,
+    onSettled: () => {
+      utils.transactions.myTransactions.invalidate();
+    },
     onSuccess: () => {
       showNotification({
         title: "Success",
@@ -112,7 +127,6 @@ const Acknowledge = () => {
       });
       setCreateAcknowledgementModalOpened(false);
       filterForm.setValue("range.1", dayjs().endOf("day").toDate());
-      myTransactionsRefetch();
     },
   });
 
@@ -172,9 +186,15 @@ const Acknowledge = () => {
         />
       </Group>
       <Box mt="xl">
-        {myTransactionsData?.map((transaction, index) => (
-          <AcknowledgementCard transaction={transaction} key={index} />
-        ))}
+        {myTransactionsData?.pages.flatMap((page) =>
+          page.items.map((item) => (
+            <AcknowledgementCard
+              transaction={item}
+              key={item.id}
+              ref={sentryRef}
+            />
+          ))
+        )}
       </Box>
       <CreateAcknowledgementModal
         opened={createAcknowledgementModalOpened}

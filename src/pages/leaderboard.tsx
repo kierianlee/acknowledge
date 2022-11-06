@@ -1,11 +1,13 @@
-import { Box, Title, Group } from "@mantine/core";
+import { Box, Title, Group, Center, Pagination, Select } from "@mantine/core";
 import { DateRangePicker, DateRangePickerValue } from "@mantine/dates";
 import { IconCalendar } from "@tabler/icons";
 import dayjs from "dayjs";
-import { ReactElement } from "react";
+import { ReactElement, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import useInfiniteScroll from "react-infinite-scroll-hook";
 import DefaultLayout from "../components/layouts/default/default-layout";
 import UserCard from "../components/leaderboard/user-card";
+import { limitSelectOptions } from "../server/pagination";
 import { showErrorNotification } from "../utils/errors";
 import { trpc } from "../utils/trpc";
 
@@ -14,6 +16,11 @@ interface FilterFormValues {
 }
 
 const Leaderboard = () => {
+  const [pagination, setPagination] = useState({
+    limit: 10,
+    skip: 0,
+  });
+
   const filterForm = useForm<FilterFormValues>({
     defaultValues: {
       range: [dayjs().startOf("month").toDate(), dayjs().endOf("day").toDate()],
@@ -22,19 +29,29 @@ const Leaderboard = () => {
 
   const filterDateRange = filterForm.watch("range");
 
-  const { data: leaderboardData } = trpc.pointLogs.leaderboard.useQuery(
+  const { data, isLoading, isError } = trpc.pointLogs.leaderboard.useQuery(
     {
       filter: {
         createdAt: {
-          gte: filterDateRange[0]?.toISOString(),
-          lte: filterDateRange[1]?.toISOString(),
+          gte: filterDateRange[0]!.toISOString(),
+          lt: filterDateRange[1]!.toISOString(),
         },
       },
+      limit: pagination.limit,
+      skip: pagination.skip,
     },
     {
       onError: showErrorNotification,
     }
   );
+
+  const [sentryRef] = useInfiniteScroll({
+    loading: isLoading,
+    hasNextPage: false,
+    onLoadMore: () => {},
+    disabled: isError,
+    rootMargin: "0px 0px 400px 0px",
+  });
 
   return (
     <Box p="lg">
@@ -52,15 +69,38 @@ const Leaderboard = () => {
               value={value}
               maxDate={dayjs().add(1, "day").endOf("day").toDate()}
               icon={<IconCalendar size={16} />}
+              clearable={false}
             />
           )}
         />
       </Group>
       <Box mt="xl">
-        {leaderboardData?.map((item, index) => (
-          <UserCard key={index} rank={index + 1} account={item} />
+        {data?.items.map((item, index) => (
+          <UserCard key={index} account={item} ref={sentryRef} />
         ))}
       </Box>
+      <Group mt="xl" position="apart">
+        <div />
+        <Pagination
+          total={
+            data?.totalCount ? Math.ceil(data.totalCount / pagination.limit) : 0
+          }
+          page={pagination.skip / pagination.limit + 1}
+          onChange={(page) => {
+            setPagination((prev) => ({ ...prev, skip: page * prev.limit - 1 }));
+          }}
+          size="sm"
+        />
+        <Select
+          value={pagination.limit.toString()}
+          onChange={(value) =>
+            setPagination((prev) => ({ ...prev, limit: parseInt(value!) }))
+          }
+          data={limitSelectOptions}
+          clearable={false}
+          size="xs"
+        />
+      </Group>
     </Box>
   );
 };

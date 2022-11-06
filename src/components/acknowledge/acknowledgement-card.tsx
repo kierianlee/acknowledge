@@ -8,7 +8,7 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { IconArrowDown, IconArrowUp, IconHeartHandshake } from "@tabler/icons";
-import { useMemo } from "react";
+import { forwardRef, useMemo } from "react";
 import dayjs from "dayjs";
 import { useAuthStore } from "../../stores/auth";
 import { inferProcedureOutput } from "@trpc/server";
@@ -18,10 +18,13 @@ import { getInitials } from "../../utils/string";
 interface AcknowledgementCardProps {
   transaction: inferProcedureOutput<
     AppRouter["transactions"]["myTransactions"]
-  >[0];
+  >["items"][0];
 }
 
-const AcknowledgementCard = ({ transaction }: AcknowledgementCardProps) => {
+const AcknowledgementCard = forwardRef<
+  HTMLDivElement,
+  AcknowledgementCardProps
+>(function AcknowledgementCard({ transaction }, ref) {
   const auth = useAuthStore();
   const isBeneficiary = transaction.beneficiary.id === auth.account?.id;
   const theme = useMantineTheme();
@@ -44,6 +47,7 @@ const AcknowledgementCard = ({ transaction }: AcknowledgementCardProps) => {
         shadow: theme.shadows.xl,
       })}
       p="xl"
+      ref={ref}
     >
       <Group>
         {isBeneficiary ? (
@@ -88,6 +92,6 @@ const AcknowledgementCard = ({ transaction }: AcknowledgementCardProps) => {
       </Group>
     </Box>
   );
-};
+});
 
 export default AcknowledgementCard;

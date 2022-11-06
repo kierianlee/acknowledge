@@ -5,6 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { ActionType, ActorType } from "@prisma/client";
 import { getSdk } from "../../__generated__/graphql-operations";
 import { gqlClient } from "../../services/graphql";
+import { cursorPaginationInput } from "../pagination";
 
 export const transactionsRouter = t.router({
   myTransactions: protectedProcedure
@@ -31,17 +32,19 @@ export const transactionsRouter = t.router({
             })
             .optional(),
         }),
-        orderBy: z.object({
-          field: z.enum(["createdAt"]),
-          direction: z.enum(["asc", "desc"]),
-        }),
+        ...cursorPaginationInput,
       })
     )
     .query(async ({ input, ctx }) => {
       try {
-        const transactions = await prisma.transaction.findMany({
+        const limit = input.limit ?? 50;
+        const { cursor } = input;
+
+        const items = await prisma.transaction.findMany({
+          take: limit + 1,
+          cursor: cursor ? { id: cursor } : undefined,
           orderBy: {
-            [input.orderBy.field]: input.orderBy.direction,
+            id: "desc",
           },
           where: {
             organization: {
@@ -93,7 +96,15 @@ export const transactionsRouter = t.router({
           },
         });
 
-        return transactions;
+        let nextCursor: typeof cursor | undefined = undefined;
+        if (items.length > limit) {
+          const nextItem = items.pop();
+          nextCursor = nextItem!.id;
+        }
+        return {
+          items,
+          nextCursor,
+        };
       } catch (err) {
         throw err;
       }
