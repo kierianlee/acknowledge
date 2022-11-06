@@ -6,7 +6,9 @@ import { AppRouter } from "../../server/routers/_app";
 import { getInitials } from "../../utils/string";
 
 interface UserCardProps {
-  account: inferProcedureOutput<AppRouter["pointLogs"]["leaderboard"]>[0];
+  account: inferProcedureOutput<
+    AppRouter["pointLogs"]["leaderboard"]
+  >["items"][0];
 }
 
 const UserCard = forwardRef<HTMLDivElement, UserCardProps>(function UserCard(
