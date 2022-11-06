@@ -25,13 +25,37 @@ const UserCard = forwardRef<HTMLDivElement, UserCardProps>(function UserCard(
         shadow: theme.shadows.xl,
       })}
     >
-      <Group p="md">
+      <Box
+        sx={(theme) => ({
+          display: "flex",
+          gap: "16px",
+          alignItems: "center",
+          flexWrap: "nowrap",
+          minWidth: 0,
+        })}
+        p="md"
+      >
         <Avatar color="indigo" radius="xl">
           {getInitials(name || "Organization User")}
         </Avatar>
-        <Stack sx={{ flex: "1" }} spacing={0}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            overflow: "hidden",
+          }}
+        >
           <Box sx={{ flex: "1" }}>
-            <Text weight={500}>{name}</Text>
+            <Text
+              weight={500}
+              sx={() => ({
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+              })}
+              lineClamp={1}
+            >
+              {name}
+            </Text>
           </Box>
           <Group spacing={4}>
             <IconMedal size="16px" />
@@ -39,7 +63,7 @@ const UserCard = forwardRef<HTMLDivElement, UserCardProps>(function UserCard(
               {points} points ({totalPoints} all time)
             </Text>
           </Group>
-        </Stack>
+        </Box>
         <Badge
           radius="md"
           py="xl"
@@ -57,7 +81,7 @@ const UserCard = forwardRef<HTMLDivElement, UserCardProps>(function UserCard(
         >
           <Text size="sm">#{rank}</Text>
         </Badge>
-      </Group>
+      </Box>
     </Box>
   );
 });

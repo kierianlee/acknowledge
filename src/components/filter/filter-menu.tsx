@@ -1,4 +1,4 @@
-import { Button, Menu } from "@mantine/core";
+import { Button, Menu, useMantineTheme } from "@mantine/core";
 import type { ReactNode } from "react";
 import { IconFilter } from "@tabler/icons";
 import {
@@ -6,6 +6,7 @@ import {
   type FilterInputOption,
   type FilterValue,
 } from "./filter-input";
+import { useMediaQuery } from "@mantine/hooks";
 
 export interface FilterMenuProps {
   onOpen: () => void;
@@ -24,11 +25,14 @@ const FilterMenu = ({
   options,
   target,
 }: FilterMenuProps) => {
+  const theme = useMantineTheme();
+  const smallMedia = useMediaQuery(`(max-width: ${theme.breakpoints.sm}px)`);
+
   return (
     <Menu
       opened={opened}
       onClose={onClose}
-      width={150 + 150 + 30 + 16 * 2 + 16 * 2 + 2}
+      width={smallMedia ? 350 : 450}
       position="bottom"
       withArrow
     >

@@ -204,8 +204,21 @@ const IssueCard = ({
             p="md"
             onSubmit={form.handleSubmit(handleSubmission)}
           >
-            <Group>
-              <Group sx={{ flex: "1" }}>
+            <Group
+              sx={(theme) => ({
+                [theme.fn.smallerThan("sm")]: {
+                  display: "block",
+                },
+              })}
+            >
+              <Group
+                sx={(theme) => ({
+                  flex: "1",
+                  [theme.fn.smallerThan("sm")]: {
+                    justifyContent: "space-between",
+                  },
+                })}
+              >
                 <Group>
                   <Controller
                     control={form.control}
@@ -262,39 +275,53 @@ const IssueCard = ({
                   rules={{ required: true }}
                 />
               </Group>
-              <Button
-                type="submit"
-                variant="outline"
-                color="gray"
-                onClick={() => setEditable(false)}
-                sx={(theme) => ({ borderColor: theme.colors.gray[4] })}
-                size="xs"
+              <Box
+                sx={(theme) => ({
+                  display: "flex",
+                  gap: "12px",
+
+                  [theme.fn.smallerThan("sm")]: {
+                    marginTop: theme.spacing.md,
+                    justifyContent: "space-between",
+                  },
+                })}
               >
-                Cancel
-              </Button>
-              {points !== undefined && points !== null && !claimed && (
+                <Box>
+                  <Button
+                    type="submit"
+                    variant="outline"
+                    color="gray"
+                    onClick={() => setEditable(false)}
+                    sx={(theme) => ({ borderColor: theme.colors.gray[4] })}
+                    size="xs"
+                  >
+                    Cancel
+                  </Button>
+                  {points !== undefined && points !== null && !claimed && (
+                    <Button
+                      size="xs"
+                      color="red"
+                      disabled={createRewardLoading || updateRewardLoading}
+                      loading={deleteRewardLoading}
+                      onClick={() => {
+                        deleteRewardMutate({
+                          rewardId: acknowledgeMetadata.rewardId,
+                        });
+                      }}
+                    >
+                      Remove Reward
+                    </Button>
+                  )}
+                </Box>
                 <Button
+                  type="submit"
                   size="xs"
-                  color="red"
-                  disabled={createRewardLoading || updateRewardLoading}
-                  loading={deleteRewardLoading}
-                  onClick={() => {
-                    deleteRewardMutate({
-                      rewardId: acknowledgeMetadata.rewardId,
-                    });
-                  }}
+                  loading={createRewardLoading || updateRewardLoading}
+                  disabled={deleteRewardLoading || claimed}
                 >
-                  Remove Reward
+                  Assign
                 </Button>
-              )}
-              <Button
-                type="submit"
-                size="xs"
-                loading={createRewardLoading || updateRewardLoading}
-                disabled={deleteRewardLoading || claimed}
-              >
-                Assign
-              </Button>
+              </Box>
             </Group>
           </Box>
         </>

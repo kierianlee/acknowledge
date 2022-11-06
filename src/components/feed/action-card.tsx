@@ -9,9 +9,7 @@ import { getInitials } from "../../utils/string";
 import { WorkflowStatesQuery } from "../../__generated__/graphql-operations";
 
 interface ActionCardProps {
-  action: inferProcedureOutput<
-    AppRouter["actions"]["feed"]
-  >["items"][0];
+  action: inferProcedureOutput<AppRouter["actions"]["feed"]>["items"][0];
   workflowStates?: WorkflowStatesQuery["workflowStates"]["edges"];
 }
 
@@ -77,22 +75,40 @@ const ActionCard = forwardRef<HTMLDivElement, ActionCardProps>(
         p="xl"
         ref={ref}
       >
-        <Stack spacing={8}>
-          <Group>
-            <Group>
-              <Avatar size="sm" radius="xl" color="indigo">
-                {getInitials(title || "")}
-              </Avatar>
-              <Text weight={500}>{title}</Text>
-            </Group>
+        <Box>
+          <Group
+            mb="sm"
+            sx={(theme) => ({
+              minWidth: 0,
+            })}
+            noWrap
+          >
+            <Avatar size="sm" radius="xl" color="indigo">
+              {getInitials(title || "")}
+            </Avatar>
+            <Text
+              weight={500}
+              sx={(theme) => ({
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+              })}
+            >
+              {title}
+            </Text>
           </Group>
-          <Text size="sm" color="dark">
+          <Text
+            size="sm"
+            color="dark"
+            mb="sm"
+            sx={(theme) => ({ overflowWrap: "break-word" })}
+          >
             {message}
           </Text>
           <Text size="xs" color="dimmed">
             {dayjs(action.createdAt).format("hh:mm A, DD MMM YYYY")}
           </Text>
-        </Stack>
+        </Box>
       </Box>
     );
   }

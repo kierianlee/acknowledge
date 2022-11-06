@@ -209,7 +209,16 @@ const Issues: NextPageWithLayout = () => {
 
   return (
     <Box p="lg">
-      <Title order={2} weight={500} mb="sm">
+      <Title
+        order={2}
+        weight={500}
+        mb="sm"
+        sx={(theme) => ({
+          [theme.fn.smallerThan("sm")]: {
+            fontSize: "1.4rem",
+          },
+        })}
+      >
         Issues
       </Title>
       <Group mb="xl">

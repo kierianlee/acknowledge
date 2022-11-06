@@ -24,6 +24,11 @@ const FilterBadge = ({ value, onRemove }: FilterBadgeProps) => {
       sx={(theme) => ({
         paddingRight: 3,
         paddingBlock: "14px",
+        fontSize: "9px",
+
+        [theme.fn.largerThan("sm")]: {
+          fontSize: "11px",
+        },
       })}
       variant="filled"
       radius="sm"

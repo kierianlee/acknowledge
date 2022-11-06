@@ -55,7 +55,16 @@ const Leaderboard = () => {
 
   return (
     <Box p="lg">
-      <Title order={2} weight={500} mb="xl">
+      <Title
+        order={2}
+        weight={500}
+        mb="xl"
+        sx={(theme) => ({
+          [theme.fn.smallerThan("sm")]: {
+            fontSize: "1.4rem",
+          },
+        })}
+      >
         Leaderboard
       </Title>
       <Group>
@@ -80,7 +89,13 @@ const Leaderboard = () => {
         ))}
       </Box>
       <Group mt="xl" position="apart">
-        <div />
+        <Box
+          sx={(theme) => ({
+            [theme.fn.smallerThan("sm")]: {
+              display: "none",
+            },
+          })}
+        />
         <Pagination
           total={
             data?.totalCount ? Math.ceil(data.totalCount / pagination.limit) : 0

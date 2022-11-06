@@ -142,8 +142,16 @@ const Acknowledge = () => {
 
   return (
     <Box p="lg">
-      <Group position="apart">
-        <Title order={2} weight={500} mb="xl">
+      <Group position="apart" mb="xl">
+        <Title
+          order={2}
+          weight={500}
+          sx={(theme) => ({
+            [theme.fn.smallerThan("sm")]: {
+              fontSize: "1.4rem",
+            },
+          })}
+        >
           Acknowledge
         </Title>
         <Button
