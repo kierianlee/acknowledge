@@ -65,7 +65,7 @@ export const issuesRouter = t.router({
               ? `https://acknowledge.gg/issue/${input.issueId}`
               : process.env.NEXT_PUBLIC_TARGET_ENV === "staging"
               ? `https://staging.acknowledge.gg/issue/${input.issueId}`
-              : `http://localhost:3000/issue/${input.issueId}`,
+              : `https://localhost:3000/issue/${input.issueId}`,
           metadata: {
             rewardId,
             points: input.points,
