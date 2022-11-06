@@ -8,6 +8,7 @@ import { gqlClient } from "../services/graphql";
 import { showErrorNotification } from "../utils/errors";
 import { trpc } from "../utils/trpc";
 import { getSdk } from "../__generated__/graphql-operations";
+import useInfiniteScroll from "react-infinite-scroll-hook";
 
 const Feed = () => {
   const { data: session } = useSession();
@@ -29,18 +30,27 @@ const Feed = () => {
       refetchOnWindowFocus: false,
     }
   );
-  const { data: actionsData } = trpc.actions.organizationActions.useQuery(
-    {
-      filter: {},
-      orderBy: {
-        direction: "desc",
-        field: "createdAt",
+  const { data, hasNextPage, fetchNextPage, isLoading, error } =
+    trpc.actions.organizationActions.useInfiniteQuery(
+      {
+        filter: {},
+        limit: 10,
       },
-    },
-    {
-      onError: showErrorNotification,
-    }
-  );
+      {
+        getNextPageParam: (lastPage) => lastPage.nextCursor,
+        onError: showErrorNotification,
+      }
+    );
+
+  const [sentryRef] = useInfiniteScroll({
+    loading: isLoading,
+    hasNextPage: hasNextPage ?? false,
+    onLoadMore: fetchNextPage,
+    disabled: !!error,
+    rootMargin: "0px 0px 400px 0px",
+  });
+
+  console.log(data);
 
   return (
     <Box p="lg">
@@ -48,13 +58,16 @@ const Feed = () => {
         Feed
       </Title>
       <Box mt="xl">
-        {actionsData?.map((action, index) => (
-          <ActionCard
-            action={action}
-            workflowStates={workflowStatesData?.workflowStates.edges}
-            key={index}
-          />
-        ))}
+        {data?.pages.flatMap((page, index) =>
+          page.items.map((item) => (
+            <ActionCard
+              action={item}
+              workflowStates={workflowStatesData?.workflowStates.edges}
+              key={item.id}
+              ref={sentryRef}
+            />
+          ))
+        )}
       </Box>
     </Box>
   );
