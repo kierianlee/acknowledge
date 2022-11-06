@@ -60,9 +60,9 @@ export const pointLogsRouter = t.router({
           FROM
             "PointLog" p
           WHERE
-            p. "createdAt" >= '2022-11-01'::timestamp
-            AND p. "createdAt" < '2022-11-30'::timestamp
-            AND p. "organizationId" = 'cl9t62q7e0002xwac9mkhe1ch';`);
+            p. "createdAt" >= ${input.filter.createdAt.gte}::timestamp
+            AND p. "createdAt" < ${input.filter.createdAt.lt}::timestamp
+            AND p. "organizationId" = ${ctx.session.account.organizationId};`);
 
         return { items: results, totalCount: totalCount[0].count };
       } catch (err) {
