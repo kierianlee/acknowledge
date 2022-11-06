@@ -8,6 +8,7 @@ import { showErrorNotification } from "../../../utils/errors";
 import { Loader } from "@mantine/core";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import Header from "../common/header";
 
 const DefaultLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
   const session = useSession();
@@ -39,6 +40,7 @@ const DefaultLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
       />
       <Container>
         <Sidebar />
+        <Header />
         <Content>{children}</Content>
       </Container>
     </Root>
@@ -52,10 +54,12 @@ const Root = styled.div({
   display: "flex",
   flexDirection: "column",
 });
-const Container = styled.div({
-  flex: "1",
-  display: "flex",
-});
+const Container = styled.div(({ theme }) => ({
+  [theme.fn.largerThan("sm")]: {
+    flex: "1",
+    display: "flex",
+  },
+}));
 const Content = styled.div({
   flex: "1",
   display: "flex",

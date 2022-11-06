@@ -7,12 +7,25 @@ import {
   Avatar,
   Text,
   Stack,
+  Menu,
+  Burger,
+  Collapse,
+  useMantineTheme,
 } from "@mantine/core";
+import {
+  IconCheckbox,
+  IconHeartHandshake,
+  IconLogout,
+  IconMessage,
+  IconPodium,
+  IconSettings,
+} from "@tabler/icons";
 import { signOut } from "next-auth/react";
 import Image from "next/future/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { Fragment, useMemo, useState } from "react";
 import { useAuthStore } from "../../../stores/auth";
-import { getInitials } from "../../../utils/string";
 
 const HEADER_HEIGHT = 60;
 
@@ -20,27 +33,15 @@ const useStyles = createStyles((theme) => ({
   root: {
     position: "relative",
     zIndex: 1,
-  },
-
-  logo: {
-    height: "30px",
-    width: "auto",
-  },
-
-  dropdown: {
-    position: "absolute",
-    top: HEADER_HEIGHT,
-    left: 0,
-    right: 0,
-    zIndex: 0,
-    borderTopRightRadius: 0,
-    borderTopLeftRadius: 0,
-    borderTopWidth: 0,
-    overflow: "hidden",
 
     [theme.fn.largerThan("sm")]: {
       display: "none",
     },
+  },
+
+  logo: {
+    height: "25px",
+    width: "auto",
   },
 
   header: {
@@ -50,53 +51,40 @@ const useStyles = createStyles((theme) => ({
     height: "100%",
   },
 
-  links: {
-    [theme.fn.smallerThan("sm")]: {
-      display: "none",
-    },
-  },
+  menu: {
+    background: "#fff",
+    shadow: theme.shadows.xl,
 
-  burger: {
     [theme.fn.largerThan("sm")]: {
       display: "none",
     },
   },
 
-  link: {
-    display: "block",
-    lineHeight: 1,
-    padding: "8px 12px",
+  menuButton: {
+    display: "flex",
+    alignItems: "center",
+    width: "100%",
+    fontSize: theme.fontSizes.xs,
+    padding: `8px ${theme.spacing.xs}px`,
     borderRadius: theme.radius.sm,
-    textDecoration: "none",
-    color:
-      theme.colorScheme === "dark"
-        ? theme.colors.dark[0]
-        : theme.colors.gray[7],
-    fontSize: theme.fontSizes.sm,
     fontWeight: 500,
-
-    "&:hover": {
-      backgroundColor:
-        theme.colorScheme === "dark"
-          ? theme.colors.dark[6]
-          : theme.colors.gray[0],
-    },
-
-    [theme.fn.smallerThan("sm")]: {
-      borderRadius: 0,
-      padding: theme.spacing.md,
+    "&:not(:last-child)": {
+      borderBottom: `1px solid ${theme.colors.gray[3]}`,
     },
   },
 
-  linkActive: {
-    "&, &:hover": {
-      backgroundColor: theme.fn.variant({
-        variant: "light",
-        color: theme.primaryColor,
-      }).background,
-      color: theme.fn.variant({ variant: "light", color: theme.primaryColor })
-        .color,
-    },
+  menuButtonInner: {
+    display: "flex",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  menuButtonIcon: {
+    marginRight: theme.spacing.sm,
+    color:
+      theme.colorScheme === "dark"
+        ? theme.colors.dark[2]
+        : theme.colors.gray[6],
   },
 }));
 
@@ -104,77 +92,121 @@ interface HeaderResponsiveProps {}
 
 const Header = ({}: HeaderResponsiveProps) => {
   const { classes } = useStyles();
+  const [menuOpened, setMenuOpened] = useState(false);
+  const theme = useMantineTheme();
   const auth = useAuthStore();
+  const router = useRouter();
+
+  const links = useMemo(
+    () => [
+      { icon: IconCheckbox, label: "Issues", path: "/issues" },
+      { icon: IconPodium, label: "Leaderboard", path: "/leaderboard" },
+      { icon: IconHeartHandshake, label: "Acknowledge", path: "/acknowledge" },
+      { icon: IconMessage, label: "Feed", path: "/feed" },
+      ...(auth.linearUser?.admin
+        ? [{ icon: IconSettings, label: "Settings", path: "/settings" }]
+        : []),
+    ],
+    [auth.linearUser]
+  );
 
   return (
-    <MantineHeader height={HEADER_HEIGHT} className={classes.root}>
-      <Container className={classes.header} fluid>
-        <Link href="/" passHref>
-          <a>
-            <Image
-              src="/logo.svg"
-              width="0"
-              height="0"
-              className={classes.logo}
-              alt="Acknowledge"
-            />
-          </a>
-        </Link>
+    <Fragment>
+      <MantineHeader height={HEADER_HEIGHT} className={classes.root}>
+        <Container className={classes.header} fluid>
+          <Link href="/" passHref>
+            <a>
+              <Image
+                src="/logo.svg"
+                width="0"
+                height="0"
+                className={classes.logo}
+                alt="Acknowledge"
+              />
+            </a>
+          </Link>
 
-        <UnstyledButton onClick={() => signOut()}>
-          <Group>
-            <Avatar size={40} color="blue" radius="xl">
-              {getInitials(auth.linearUser?.name || "")}
-            </Avatar>
-            <Stack spacing={4}>
-              <Text size="sm" inline>
-                {auth.linearUser?.name}
-              </Text>
-              <Text size="xs" color="dimmed" inline>
-                {auth.linearUser?.organization.name}
-              </Text>
-            </Stack>
-          </Group>
-        </UnstyledButton>
-
-        {/*
-            Mantine Bug: https://github.com/mantinedev/mantine/issues/2609
-
-            Implement below when fixed.
-        */}
-        {/* <Menu shadow="md" width={200}>
-          <Menu.Target>
-            <UnstyledButton>
-              <Group>
-                <Avatar size={40} color="blue" radius="xl">
-                  {getInitials(auth.user?.name || "")}
-                </Avatar>
-                <Stack spacing={4}>
-                  <Text size="sm" inline>
-                    {auth.user?.name}
-                  </Text>
-                  <Text size="xs" color="dimmed" inline>
-                    {auth.user?.organization.name}
-                  </Text>
-                </Stack>
-              </Group>
-            </UnstyledButton>
-          </Menu.Target>
-
-          <Menu.Dropdown>
-            <Menu.Item
-              color="red"
-              icon={<IconLogout size={14} />}
-              onClick={() => {
-                signOut();
-              }}
-            >
-              Logout
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu> */}
-      </Container>
-    </MantineHeader>
+          <Burger
+            opened={menuOpened}
+            onClick={() => setMenuOpened((prev) => !prev)}
+          />
+        </Container>
+      </MantineHeader>
+      <Collapse in={menuOpened}>
+        <Stack className={classes.menu} spacing={0}>
+          {links.map((link) => (
+            <Link passHref href={link.path} key={link.label}>
+              <UnstyledButton
+                className={classes.menuButton}
+                component="a"
+                sx={(theme) => ({
+                  backgroundColor:
+                    theme.colorScheme === "dark"
+                      ? theme.colors.dark[6]
+                      : router.pathname === link.path
+                      ? theme.colors.gray[2]
+                      : "#fff",
+                  color:
+                    theme.colorScheme === "dark"
+                      ? theme.colors.dark[0]
+                      : router.pathname === link.path
+                      ? theme.black
+                      : theme.colors.gray[7],
+                  "&:hover": {
+                    backgroundColor:
+                      theme.colorScheme === "dark"
+                        ? theme.colors.dark[6]
+                        : router.pathname === link.path
+                        ? theme.colors.gray[2]
+                        : theme.colors.gray[0],
+                    color:
+                      theme.colorScheme === "dark" ? theme.white : theme.black,
+                  },
+                })}
+              >
+                <div className={classes.menuButtonInner}>
+                  <link.icon
+                    size={20}
+                    className={classes.menuButtonIcon}
+                    stroke={1.5}
+                  />
+                  <span>{link.label}</span>
+                </div>
+              </UnstyledButton>
+            </Link>
+          ))}
+          <UnstyledButton
+            className={classes.menuButton}
+            sx={(theme) => ({
+              backgroundColor:
+                theme.colorScheme === "dark" ? theme.colors.dark[6] : "#fff",
+              color:
+                theme.colorScheme === "dark"
+                  ? theme.colors.dark[0]
+                  : theme.colors.gray[7],
+              "&:hover": {
+                backgroundColor:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[6]
+                    : theme.colors.gray[0],
+                color: theme.colorScheme === "dark" ? theme.white : theme.black,
+              },
+            })}
+            onClick={() => signOut()}
+          >
+            <div className={classes.menuButtonInner}>
+              <IconLogout
+                size={20}
+                className={classes.menuButtonIcon}
+                stroke={1.5}
+                style={{ color: theme.colors.red[5] }}
+              />
+              <span style={{ color: theme.colors.red[5] }}>Logout</span>
+            </div>
+          </UnstyledButton>
+        </Stack>
+      </Collapse>
+    </Fragment>
   );
 };
 
