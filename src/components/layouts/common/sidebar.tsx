@@ -30,6 +30,7 @@ import { useMemo } from "react";
 const useStyles = createStyles((theme) => ({
   navbar: {
     paddingTop: 0,
+    height: "auto",
 
     [theme.fn.smallerThan("sm")]: {
       display: "none",

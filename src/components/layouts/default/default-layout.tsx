@@ -39,8 +39,8 @@ const DefaultLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
         opened={!apiKeySet && session.status === "authenticated"}
       />
       <Container>
-        <Sidebar />
         <Header />
+        <Sidebar />
         <Content>{children}</Content>
       </Container>
     </Root>
