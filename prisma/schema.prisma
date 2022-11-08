@@ -11,7 +11,7 @@ model Reward {
   id              String       @id @default(cuid())
   value           Int
   issueId         String       @unique
-  issueIdentifier String       @unique
+  issueIdentifier String
   targetStateId   String
   attachmentId    String       @unique
   claimed         Boolean      @default(false)
