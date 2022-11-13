@@ -1,4 +1,4 @@
-import { Box, Title, Group, Center, Pagination, Select } from "@mantine/core";
+import { Box, Title, Group, Pagination, Select } from "@mantine/core";
 import { DateRangePicker, DateRangePickerValue } from "@mantine/dates";
 import { IconCalendar } from "@tabler/icons";
 import dayjs from "dayjs";
@@ -33,8 +33,8 @@ const Leaderboard = () => {
     {
       filter: {
         createdAt: {
-          gte: filterDateRange[0]!.toISOString(),
-          lt: filterDateRange[1]!.toISOString(),
+          gte: filterDateRange[0]?.toISOString() || "",
+          lt: filterDateRange[1]?.toISOString() || "",
         },
       },
       limit: pagination.limit,
@@ -42,6 +42,7 @@ const Leaderboard = () => {
     },
     {
       onError: showErrorNotification,
+      enabled: !!filterDateRange[0] && !!filterDateRange[1],
     }
   );
 
